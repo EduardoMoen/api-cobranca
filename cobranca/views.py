@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from cobranca.filters import TipoCobrancaFilter
+from cobranca.filters import TipoCobrancaFilter, PosicaoChequeFilter
 from cobranca.models import (
     TipoCobranca,
     Banco,
@@ -58,6 +58,7 @@ class EscritorioViewSet(ModelViewSet):
 class PosicaoChequeViewSet(ModelViewSet):
     queryset = PosicaoCheque.objects.all()
     serializer_class = PosicaoChequeSerializer
+    filterset_class = PosicaoChequeFilter
 
 
 class EntidadeViewSet(ModelViewSet):
