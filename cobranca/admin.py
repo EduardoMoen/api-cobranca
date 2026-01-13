@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from cobranca.models import Usuario, Escritorio
+
+admin.site.register(Usuario)
+
+admin.site.register(Escritorio)

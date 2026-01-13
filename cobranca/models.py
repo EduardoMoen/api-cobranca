@@ -1,4 +1,6 @@
 import uuid
+
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
@@ -158,3 +160,13 @@ class Boleto(models.Model):
 
     def __str__(self):
         return f"{self.codigoEscola} {self.codigoAluno}"
+
+
+class Usuario(AbstractUser):
+    escritorio = models.ForeignKey(
+        Escritorio,
+        on_delete=models.PROTECT,
+        related_name="usuarios",
+        null=True,
+        blank=True,
+    )

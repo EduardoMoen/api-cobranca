@@ -1,4 +1,6 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -42,7 +44,7 @@ from cobranca.services import get_external_data
 class TipoCobrancaViewSet(ModelViewSet):
     queryset = TipoCobranca.objects.all()
     serializer_class = TipoCobrancaSerializer
-    filterset_class = TipoCobrancaFilter
+    # filterset_class = TipoCobrancaFilter
 
 
 class BancoViewSet(ModelViewSet):
@@ -58,7 +60,7 @@ class EscritorioViewSet(ModelViewSet):
 class PosicaoChequeViewSet(ModelViewSet):
     queryset = PosicaoCheque.objects.all()
     serializer_class = PosicaoChequeSerializer
-    filterset_class = PosicaoChequeFilter
+    # filterset_class = PosicaoChequeFilter
 
 
 class EntidadeViewSet(ModelViewSet):
