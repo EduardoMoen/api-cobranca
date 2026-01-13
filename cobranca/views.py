@@ -1,0 +1,125 @@
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
+
+from cobranca.filters import TipoCobrancaFilter
+from cobranca.models import (
+    TipoCobranca,
+    Banco,
+    Escritorio,
+    PosicaoCheque,
+    Entidade,
+    Escola,
+    Responsavel,
+    PosicaoContrato,
+    Alinea,
+    Boleto,
+    Lugar,
+    Andamento,
+    Acordo,
+    AcordoParcelas,
+)
+from cobranca.serializers import (
+    TipoCobrancaSerializer,
+    BancoSerializer,
+    EscritorioSerializer,
+    PosicaoChequeSerializer,
+    EntidadeSerializer,
+    EscolaSerializer,
+    ResponsavelSerializer,
+    PosicaoContratoSerializer,
+    LugarSerializer,
+    AndamentoSerializer,
+    AlineaSerializer,
+    AcordoSerializer,
+    AcordoParcelasSerializer,
+    BoletoSerializer,
+)
+from cobranca.services import get_external_data
+
+
+class TipoCobrancaViewSet(ModelViewSet):
+    queryset = TipoCobranca.objects.all()
+    serializer_class = TipoCobrancaSerializer
+    filterset_class = TipoCobrancaFilter
+
+
+class BancoViewSet(ModelViewSet):
+    queryset = Banco.objects.all()
+    serializer_class = BancoSerializer
+
+
+class EscritorioViewSet(ModelViewSet):
+    queryset = Escritorio.objects.all()
+    serializer_class = EscritorioSerializer
+
+
+class PosicaoChequeViewSet(ModelViewSet):
+    queryset = PosicaoCheque.objects.all()
+    serializer_class = PosicaoChequeSerializer
+
+
+class EntidadeViewSet(ModelViewSet):
+    queryset = Entidade.objects.all()
+    serializer_class = EntidadeSerializer
+
+
+class EscolaViewSet(ModelViewSet):
+    queryset = Escola.objects.all()
+    serializer_class = EscolaSerializer
+
+
+class ResponsavelViewSet(ModelViewSet):
+    queryset = Responsavel.objects.all()
+    serializer_class = ResponsavelSerializer
+
+
+class PosicaoContratoViewSet(ModelViewSet):
+    queryset = PosicaoContrato.objects.all()
+    serializer_class = PosicaoContratoSerializer
+
+
+class LugarViewSet(ModelViewSet):
+    queryset = Lugar.objects.all()
+    serializer_class = LugarSerializer
+
+
+class AndamentoViewSet(ModelViewSet):
+    queryset = Andamento.objects.all()
+    serializer_class = AndamentoSerializer
+
+
+class AlineaViewSet(ModelViewSet):
+    queryset = Alinea.objects.all()
+    serializer_class = AlineaSerializer
+
+
+class AcordoViewSet(ModelViewSet):
+    queryset = Acordo.objects.all()
+    serializer_class = AcordoSerializer
+
+
+class AcordoParcelasViewSet(ModelViewSet):
+    queryset = AcordoParcelas.objects.all()
+    serializer_class = AcordoParcelasSerializer
+
+
+class BoletoViewSet(ModelViewSet):
+    queryset = Boleto.objects.all()
+    serializer_class = BoletoSerializer
+
+
+class ImportBoletosView(APIView):
+    def post(self, request):
+        data = get_external_data()
+        if not data or "result" not in data:
+            return Response({"error": "Não foi possível obter dados da API"}, status=status.HTTP_400_BAD_REQUEST)
+
+        items = data["result"]
+        serializer = BoletoSerializer(data=items, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,0 +1,66 @@
+# ======================
+# Python
+# ======================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ======================
+# Virtualenv
+# ======================
+venv/
+env/
+.venv/
+
+# ======================
+# Django
+# ======================
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# ======================
+# Environment variables
+# ======================
+.env
+.env.*
+*.env
+
+# ======================
+# Editor / IDE
+# ======================
+.vscode/
+.idea/
+*.swp
+
+# ======================
+# OS
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Build / Deploy
+# ======================
+pip-wheel-metadata/
+dist/
+build/
+
+# ======================
+# Coverage / Test
+# ======================
+.coverage
+htmlcov/
+
+# ======================
+# Node (se tiver frontend junto)
+# ======================
+node_modules/
+
+# ======================
+# Logs
+# ======================
+*.log
