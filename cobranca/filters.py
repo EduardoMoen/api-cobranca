@@ -14,6 +14,13 @@ class TipoCobrancaFilter(django_filters.FilterSet):
         fields = ["nome"]
 
 
+class EscritorioFilter(django_filters.FilterSet):
+    nome = django_filters.CharFilter(
+        field_name="nome",
+        lookup_expr="icontains",
+    )
+
+
 class PosicaoChequeFilter(django_filters.FilterSet):
     nome = django_filters.CharFilter(
         field_name="nome",
