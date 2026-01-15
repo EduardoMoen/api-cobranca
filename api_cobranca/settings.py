@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_filters",
     "rest_framework",
+    "accounts",
     "cobranca",
 ]
 
