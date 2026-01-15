@@ -6,8 +6,13 @@ from rest_framework.viewsets import ModelViewSet
 
 from cobranca.filters import (
     TipoCobrancaFilter,
-    PosicaoChequeFilter,
+    AlineaFilter,
+    BancoFilter,
     EscritorioFilter,
+    PosicaoChequeFilter,
+    LugarFilter,
+    PosicaoContratoFilter,
+    AndamentoFilter,
 )
 from cobranca.models import (
     TipoCobranca,
@@ -53,6 +58,7 @@ class TipoCobrancaViewSet(ModelViewSet):
 class BancoViewSet(ModelViewSet):
     queryset = Banco.objects.all()
     serializer_class = BancoSerializer
+    filterset_class = BancoFilter
 
 
 class EscritorioViewSet(ModelViewSet):
@@ -85,21 +91,25 @@ class ResponsavelViewSet(ModelViewSet):
 class PosicaoContratoViewSet(ModelViewSet):
     queryset = PosicaoContrato.objects.all()
     serializer_class = PosicaoContratoSerializer
+    filterset_class = PosicaoContratoFilter
 
 
 class LugarViewSet(ModelViewSet):
     queryset = Lugar.objects.all()
     serializer_class = LugarSerializer
+    filterset_class = LugarFilter
 
 
 class AndamentoViewSet(ModelViewSet):
     queryset = Andamento.objects.all()
     serializer_class = AndamentoSerializer
+    filterset_class = AndamentoFilter
 
 
 class AlineaViewSet(ModelViewSet):
     queryset = Alinea.objects.all()
     serializer_class = AlineaSerializer
+    filterset_class = AlineaFilter
 
 
 class AcordoViewSet(ModelViewSet):
