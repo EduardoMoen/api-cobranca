@@ -5,6 +5,14 @@ from cobranca.models import Usuario, Escritorio
 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
-    pass
+    fieldsets = UserAdmin.fieldsets + (
+        ("Escritório", {"fields": ("escritorio",)}),
+    )
 
-admin.site.register(Escritorio)
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ("Escritório", {"fields": ("escritorio",)}),
+    )
+
+@admin.register(Escritorio)
+class EscritorioAdmin(admin.ModelAdmin):
+    list_display = ("id", "nome")
