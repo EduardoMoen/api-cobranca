@@ -75,7 +75,7 @@ class PosicaoChequeViewSet(ModelViewSet):
     filterset_class = PosicaoChequeFilter
 
     def get_queryset(self):
-        queryset = PosicaoContrato.objects.all()
+        queryset = PosicaoCheque.objects.all()
 
         if self.request.method == 'GET':
             user = self.request.user
