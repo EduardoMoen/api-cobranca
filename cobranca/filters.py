@@ -64,7 +64,7 @@ class PosicaoChequeFilter(BaseNomeEscritorioFilter):
         fields = ["nome", "escritorio"]
 
 
-class LugarFilter(BaseNomeEscritorioFilter):
+class LugarFilter(BaseNomeFilter):
     class Meta:
         model = Lugar
         fields = ["nome", "escritorio"]

@@ -115,6 +115,7 @@ class PosicaoContratoViewSet(ModelViewSet):
 
 class LugarViewSet(ModelViewSet):
     serializer_class = LugarSerializer
+    filterset_class = LugarFilter
 
     def get_queryset(self):
         queryset = Lugar.objects.all()
