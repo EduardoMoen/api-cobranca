@@ -71,25 +71,31 @@ class EscritorioViewSet(ModelViewSet):
 
 
 class PosicaoChequeViewSet(ModelViewSet):
-    queryset = PosicaoCheque.objects.all()
     serializer_class = PosicaoChequeSerializer
+    filterset_class = PosicaoChequeFilter
 
-    def get_filterset_class(self):
+    def get_queryset(self):
+        queryset = PosicaoContrato.objects.all()
+
         if self.request.method == 'GET':
-            return PosicaoChequeFilter
+            user = self.request.user
+            queryset = queryset.filter(escritorio_id=user.escritorio_id)
 
-        return None
+        return queryset
 
 
 class EntidadeViewSet(ModelViewSet):
-    queryset = Entidade.objects.all()
     serializer_class = EntidadeSerializer
+    filterset_class = EntidadeFilter
 
-    def get_filterset_class(self):
+    def get_queryset(self):
+        queryset = Entidade.objects.all()
+
         if self.request.method == 'GET':
-            return EntidadeFilter
+            user = self.request.user
+            queryset = queryset.filter(escritorio_id=user.escritorio_id)
 
-        return None
+        return queryset
 
 
 class EscolaViewSet(ModelViewSet):
@@ -103,14 +109,17 @@ class ResponsavelViewSet(ModelViewSet):
 
 
 class PosicaoContratoViewSet(ModelViewSet):
-    queryset = PosicaoContrato.objects.all()
     serializer_class = PosicaoContratoSerializer
+    filterset_class = PosicaoContratoFilter
 
-    def get_filterset_class(self):
+    def get_queryset(self):
+        queryset = PosicaoContrato.objects.all()
+
         if self.request.method == 'GET':
-            return PosicaoContratoFilter
+            user = self.request.user
+            queryset = queryset.filter(escritorio_id=user.escritorio_id)
 
-        return None
+        return queryset
 
 
 class LugarViewSet(ModelViewSet):
@@ -127,7 +136,6 @@ class LugarViewSet(ModelViewSet):
         return queryset
 
 
-
 class AndamentoViewSet(ModelViewSet):
     serializer_class = AndamentoSerializer
     filterset_class = AndamentoFilter
@@ -136,14 +144,8 @@ class AndamentoViewSet(ModelViewSet):
         queryset = Andamento.objects.all()
 
         if self.request.method == 'GET':
-            escritorio = self.request.query_params.get("escritorio")
-
-            if not escritorio:
-                raise ValidationError({
-                    "escritorio": "Este parâmetro é obrigatório no GET."
-                })
-
-            queryset = queryset.filter(escritorio_id=escritorio)
+            user = self.request.user
+            queryset = queryset.filter(escritorio_id=user.escritorio_id)
 
         return queryset
 

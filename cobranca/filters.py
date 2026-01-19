@@ -58,31 +58,31 @@ class EscritorioFilter(BaseNomeFilter):
         fields = ["nome"]
 
 
-class PosicaoChequeFilter(BaseNomeEscritorioFilter):
+class PosicaoChequeFilter(BaseNomeFilter):
     class Meta:
         model = PosicaoCheque
-        fields = ["nome", "escritorio"]
+        fields = ["nome"]
 
 
 class LugarFilter(BaseNomeFilter):
     class Meta:
         model = Lugar
-        fields = ["nome", "escritorio"]
+        fields = ["nome"]
 
 
-class EntidadeFilter(BaseNomeEscritorioFilter):
+class EntidadeFilter(BaseNomeFilter):
     class Meta:
         model = Entidade
-        fields = ["nome", "escritorio"]
+        fields = ["nome"]
 
 
-class PosicaoContratoFilter(BaseNomeEscritorioFilter):
+class PosicaoContratoFilter(BaseNomeFilter):
     class Meta:
         model = PosicaoContrato
-        fields = ["nome", "escritorio"]
+        fields = ["nome"]
 
 
-class AndamentoFilter(BaseNomeEscritorioFilter):
+class AndamentoFilter(BaseNomeFilter):
     class Meta:
         model = Andamento
-        fields = ["nome", "escritorio"]
+        fields = ["nome"]
