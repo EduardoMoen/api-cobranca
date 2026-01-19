@@ -1,4 +1,6 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -112,25 +114,37 @@ class PosicaoContratoViewSet(ModelViewSet):
 
 
 class LugarViewSet(ModelViewSet):
-    queryset = Lugar.objects.all()
     serializer_class = LugarSerializer
 
-    def get_filterset_class(self):
-        if self.request.method == 'GET':
-            return LugarFilter
+    def get_queryset(self):
+        queryset = Lugar.objects.all()
 
-        return None
+        if self.request.method == 'GET':
+            user = self.request.user
+            queryset = queryset.filter(escritorio_id=user.escritorio_id)
+
+        return queryset
+
 
 
 class AndamentoViewSet(ModelViewSet):
-    queryset = Andamento.objects.all()
     serializer_class = AndamentoSerializer
     filterset_class = AndamentoFilter
 
-    def filter_queryset(self, queryset):
+    def get_queryset(self):
+        queryset = Andamento.objects.all()
+
         if self.request.method == 'GET':
-            return queryset
-        return super().filter_queryset(queryset)
+            escritorio = self.request.query_params.get("escritorio")
+
+            if not escritorio:
+                raise ValidationError({
+                    "escritorio": "Este parâmetro é obrigatório no GET."
+                })
+
+            queryset = queryset.filter(escritorio_id=escritorio)
+
+        return queryset
 
 
 class AlineaViewSet(ModelViewSet):

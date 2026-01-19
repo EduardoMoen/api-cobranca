@@ -27,7 +27,7 @@ class BaseNomeFilter(django_filters.FilterSet):
 class BaseNomeEscritorioFilter(BaseNomeFilter):
     escritorio = django_filters.UUIDFilter(
         field_name="escritorio_id",
-        required=True,
+        required=False,
     )
 
     class Meta:
