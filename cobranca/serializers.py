@@ -59,6 +59,13 @@ class ResponsavelSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ResponsavelListSerializer(ResponsavelSerializer):
+    entidade_nome = serializers.CharField(
+        source="entidade.nome",
+        read_only=True,
+    )
+
+
 class PosicaoContratoSerializer(serializers.ModelSerializer):
     class Meta:
         model = PosicaoContrato
