@@ -1,6 +1,16 @@
 import django_filters
 
-from cobranca.models import TipoCobranca, PosicaoCheque, Alinea, Banco, Lugar, PosicaoContrato, Andamento, Escritorio
+from cobranca.models import (
+    TipoCobranca,
+    PosicaoCheque,
+    Alinea,
+    Banco,
+    Lugar,
+    PosicaoContrato,
+    Andamento,
+    Escritorio,
+    Entidade,
+)
 
 
 class BaseNomeFilter(django_filters.FilterSet):
@@ -57,6 +67,12 @@ class PosicaoChequeFilter(BaseNomeEscritorioFilter):
 class LugarFilter(BaseNomeEscritorioFilter):
     class Meta:
         model = Lugar
+        fields = ["nome", "escritorio"]
+
+
+class EntidadeFilter(BaseNomeEscritorioFilter):
+    class Meta:
+        model = Entidade
         fields = ["nome", "escritorio"]
 
 

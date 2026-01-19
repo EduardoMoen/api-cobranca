@@ -13,6 +13,7 @@ from cobranca.filters import (
     LugarFilter,
     PosicaoContratoFilter,
     AndamentoFilter,
+    EntidadeFilter,
 )
 from cobranca.models import (
     TipoCobranca,
@@ -70,12 +71,23 @@ class EscritorioViewSet(ModelViewSet):
 class PosicaoChequeViewSet(ModelViewSet):
     queryset = PosicaoCheque.objects.all()
     serializer_class = PosicaoChequeSerializer
-    filterset_class = PosicaoChequeFilter
+
+    def get_filterset_class(self):
+        if self.request.method == 'GET':
+            return PosicaoChequeFilter
+
+        return None
 
 
 class EntidadeViewSet(ModelViewSet):
     queryset = Entidade.objects.all()
     serializer_class = EntidadeSerializer
+
+    def get_filterset_class(self):
+        if self.request.method == 'GET':
+            return EntidadeFilter
+
+        return None
 
 
 class EscolaViewSet(ModelViewSet):
@@ -91,19 +103,34 @@ class ResponsavelViewSet(ModelViewSet):
 class PosicaoContratoViewSet(ModelViewSet):
     queryset = PosicaoContrato.objects.all()
     serializer_class = PosicaoContratoSerializer
-    filterset_class = PosicaoContratoFilter
+
+    def get_filterset_class(self):
+        if self.request.method == 'GET':
+            return PosicaoContratoFilter
+
+        return None
 
 
 class LugarViewSet(ModelViewSet):
     queryset = Lugar.objects.all()
     serializer_class = LugarSerializer
-    filterset_class = LugarFilter
+
+    def get_filterset_class(self):
+        if self.request.method == 'GET':
+            return LugarFilter
+
+        return None
 
 
 class AndamentoViewSet(ModelViewSet):
     queryset = Andamento.objects.all()
     serializer_class = AndamentoSerializer
-    filterset_class = AndamentoFilter
+
+    def get_filterset_class(self):
+        if self.request.method == 'GET':
+            return AndamentoFilter
+
+        return None
 
 
 class AlineaViewSet(ModelViewSet):
