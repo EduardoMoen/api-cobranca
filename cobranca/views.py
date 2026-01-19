@@ -125,12 +125,12 @@ class LugarViewSet(ModelViewSet):
 class AndamentoViewSet(ModelViewSet):
     queryset = Andamento.objects.all()
     serializer_class = AndamentoSerializer
+    filterset_class = AndamentoFilter
 
-    def get_filterset_class(self):
+    def filter_queryset(self, queryset):
         if self.request.method == 'GET':
-            return AndamentoFilter
-
-        return None
+            return queryset
+        return super().filter_queryset(queryset)
 
 
 class AlineaViewSet(ModelViewSet):
