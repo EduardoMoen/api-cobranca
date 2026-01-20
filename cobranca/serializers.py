@@ -54,16 +54,14 @@ class EscolaSerializer(serializers.ModelSerializer):
 
 
 class ResponsavelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Responsavel
-        fields = "__all__"
-
-
-class ResponsavelListSerializer(ResponsavelSerializer):
     entidade_nome = serializers.CharField(
         source="entidade.nome",
         read_only=True,
     )
+
+    class Meta:
+        model = Responsavel
+        fields = "__all__"
 
 
 class PosicaoContratoSerializer(serializers.ModelSerializer):

@@ -47,7 +47,7 @@ from cobranca.serializers import (
     AlineaSerializer,
     AcordoSerializer,
     AcordoParcelasSerializer,
-    BoletoSerializer, ResponsavelListSerializer,
+    BoletoSerializer,
 )
 from cobranca.services import get_external_data
 
@@ -105,7 +105,7 @@ class EscolaViewSet(ModelViewSet):
 
 class ResponsavelViewSet(ModelViewSet):
     queryset = Responsavel.objects.all()
-    permission_classes = [AllowAny]
+    serializer_class = ResponsavelSerializer
 
     def get_queryset(self):
         queryset = self.queryset
@@ -114,13 +114,6 @@ class ResponsavelViewSet(ModelViewSet):
             queryset = queryset.select_related()
 
         return queryset
-
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return ResponsavelListSerializer
-
-        return ResponsavelSerializer
 
 
 class PosicaoContratoViewSet(ModelViewSet):
