@@ -9,7 +9,7 @@ from cobranca.models import (
     PosicaoContrato,
     Andamento,
     Escritorio,
-    Entidade,
+    Entidade, Responsavel,
 )
 
 
@@ -17,16 +17,6 @@ class BaseNomeFilter(django_filters.FilterSet):
     nome = django_filters.CharFilter(
         field_name="nome",
         lookup_expr="icontains",
-        required=False,
-    )
-
-    class Meta:
-        abstract = True
-
-
-class BaseNomeEscritorioFilter(BaseNomeFilter):
-    escritorio = django_filters.UUIDFilter(
-        field_name="escritorio_id",
         required=False,
     )
 
@@ -86,3 +76,13 @@ class AndamentoFilter(BaseNomeFilter):
     class Meta:
         model = Andamento
         fields = ["nome"]
+
+class ResponsavelFilter(BaseNomeFilter):
+    entidade = django_filters.CharFilter(
+        field_name="entidade_id",
+        required=False,
+    )
+
+    class Meta:
+        model = Responsavel
+        fields = ["nome", "entidade"]

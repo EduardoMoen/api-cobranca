@@ -15,7 +15,7 @@ from cobranca.filters import (
     LugarFilter,
     PosicaoContratoFilter,
     AndamentoFilter,
-    EntidadeFilter,
+    EntidadeFilter, ResponsavelFilter,
 )
 from cobranca.models import (
     TipoCobranca,
@@ -89,11 +89,8 @@ class EntidadeViewSet(ModelViewSet):
     filterset_class = EntidadeFilter
 
     def get_queryset(self):
-        queryset = Entidade.objects.all()
-
-        if self.request.method == 'GET':
-            user = self.request.user
-            queryset = queryset.filter(escritorio_id=user.escritorio_id)
+        user = self.request.user
+        queryset = Entidade.objects.filter(escritorio_id=user.escritorio_id)
 
         return queryset
 
@@ -104,14 +101,14 @@ class EscolaViewSet(ModelViewSet):
 
 
 class ResponsavelViewSet(ModelViewSet):
-    queryset = Responsavel.objects.all()
     serializer_class = ResponsavelSerializer
+    filterset_class = ResponsavelFilter
 
     def get_queryset(self):
-        queryset = self.queryset
-
-        if self.action == "list":
-            queryset = queryset.select_related()
+        user = self.request.user
+        queryset = Responsavel.objects.select_related(
+            "entidade", "entidade__escritorio"
+        ).filter(entidade__escritorio_id=user.escritorio_id)
 
         return queryset
 
@@ -121,11 +118,8 @@ class PosicaoContratoViewSet(ModelViewSet):
     filterset_class = PosicaoContratoFilter
 
     def get_queryset(self):
-        queryset = PosicaoContrato.objects.all()
-
-        if self.request.method == 'GET':
-            user = self.request.user
-            queryset = queryset.filter(escritorio_id=user.escritorio_id)
+        user = self.request.user
+        queryset = PosicaoContrato.objects.filter(escritorio_id=user.escritorio_id)
 
         return queryset
 
@@ -135,11 +129,8 @@ class LugarViewSet(ModelViewSet):
     filterset_class = LugarFilter
 
     def get_queryset(self):
-        queryset = Lugar.objects.all()
-
-        if self.request.method == 'GET':
-            user = self.request.user
-            queryset = queryset.filter(escritorio_id=user.escritorio_id)
+        user = self.request.user
+        queryset = Lugar.objects.filter(escritorio_id=user.escritorio_id)
 
         return queryset
 
@@ -149,11 +140,8 @@ class AndamentoViewSet(ModelViewSet):
     filterset_class = AndamentoFilter
 
     def get_queryset(self):
-        queryset = Andamento.objects.all()
-
-        if self.request.method == 'GET':
-            user = self.request.user
-            queryset = queryset.filter(escritorio_id=user.escritorio_id)
+        user = self.request.user
+        queryset = Andamento.objects.filter(escritorio_id=user.escritorio_id)
 
         return queryset
 
