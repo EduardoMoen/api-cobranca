@@ -13,7 +13,7 @@ from cobranca.models import (
     Alinea,
     Acordo,
     AcordoParcelas,
-    Boleto,
+    Boleto, Divida,
 )
 
 
@@ -108,4 +108,10 @@ class AcordoParcelasSerializer(serializers.ModelSerializer):
 class BoletoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Boleto
+        fields = "__all__"
+
+
+class DividaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Divida
         fields = "__all__"

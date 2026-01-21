@@ -15,7 +15,7 @@ from cobranca.filters import (
     LugarFilter,
     PosicaoContratoFilter,
     AndamentoFilter,
-    EntidadeFilter, ResponsavelFilter, EscolaFilter,
+    EntidadeFilter, ResponsavelFilter, EscolaFilter, DividaFilter,
 )
 from cobranca.models import (
     TipoCobranca,
@@ -31,7 +31,7 @@ from cobranca.models import (
     Lugar,
     Andamento,
     Acordo,
-    AcordoParcelas,
+    AcordoParcelas, Divida,
 )
 from cobranca.serializers import (
     TipoCobrancaSerializer,
@@ -47,7 +47,7 @@ from cobranca.serializers import (
     AlineaSerializer,
     AcordoSerializer,
     AcordoParcelasSerializer,
-    BoletoSerializer,
+    BoletoSerializer, DividaSerializer,
 )
 from cobranca.services import get_external_data
 
@@ -173,6 +173,17 @@ class AcordoParcelasViewSet(ModelViewSet):
 class BoletoViewSet(ModelViewSet):
     queryset = Boleto.objects.all()
     serializer_class = BoletoSerializer
+
+
+class DividaViewSet(ModelViewSet):
+    serializer_class = DividaSerializer
+    filterset_class = DividaFilter
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Divida.objects.filter(entidade__escritorio_id=user.escritorio_id)
+
+        return queryset
 
 
 class ImportBoletosView(APIView):

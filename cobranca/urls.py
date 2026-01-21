@@ -15,7 +15,7 @@ from cobranca.views import (
     AcordoParcelasViewSet,
     BoletoViewSet,
     ImportBoletosView,
-    EscolaViewSet,
+    EscolaViewSet, DividaViewSet,
 )
 
 app_name = "cobranca"
@@ -36,6 +36,7 @@ router.register("alineas", AlineaViewSet, basename="alineas"),
 router.register("acordos", AcordoViewSet, basename="acordos"),
 router.register("acordoparcelas", AcordoParcelasViewSet, basename="acordoparcelas"),
 router.register("boletos", BoletoViewSet, basename="boletos"),
+router.register("dividas", DividaViewSet, basename="dividas"),
 
 urlpatterns = router.urls + [
     path("importboletos/", ImportBoletosView.as_view(), name="import-boletos"),

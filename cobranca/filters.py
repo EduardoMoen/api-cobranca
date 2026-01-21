@@ -93,3 +93,18 @@ class EscolaFilter(BaseNomeFilter):
         field_name="entidade_id",
         required=False,
     )
+
+
+class DividaFilter(django_filters.FilterSet):
+    codigo_aluno = django_filters.CharFilter(
+        field_name="codigoAluno",
+        required=False,
+    )
+    ano = django_filters.CharFilter(
+        field_name="ano",
+        required=False,
+    )
+    entidade = django_filters.CharFilter(
+        field_name="entidade_id",
+        required=False,
+    )
