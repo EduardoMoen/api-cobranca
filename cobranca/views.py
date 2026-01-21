@@ -15,7 +15,7 @@ from cobranca.filters import (
     LugarFilter,
     PosicaoContratoFilter,
     AndamentoFilter,
-    EntidadeFilter, ResponsavelFilter,
+    EntidadeFilter, ResponsavelFilter, EscolaFilter,
 )
 from cobranca.models import (
     TipoCobranca,
@@ -96,8 +96,16 @@ class EntidadeViewSet(ModelViewSet):
 
 
 class EscolaViewSet(ModelViewSet):
-    queryset = Escola.objects.all()
     serializer_class = EscolaSerializer
+    filterset_class = EscolaFilter
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Escola.objects.select_related(
+            "entidade", "entidade__escritorio"
+        ).filter(entidade__escritorio_id=user.escritorio_id)
+
+        return queryset
 
 
 class ResponsavelViewSet(ModelViewSet):

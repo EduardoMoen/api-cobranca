@@ -48,6 +48,11 @@ class EntidadeSerializer(serializers.ModelSerializer):
 
 
 class EscolaSerializer(serializers.ModelSerializer):
+    entidade_nome = serializers.CharField(
+        source="entidade.nome",
+        read_only=True,
+    )
+
     class Meta:
         model = Escola
         fields = "__all__"

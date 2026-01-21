@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from cobranca.models import Usuario, Escritorio, Responsavel, Entidade
+from cobranca.models import Usuario, Escritorio, Responsavel, Entidade, Escola
 
 
 @admin.register(Usuario)
@@ -25,3 +25,8 @@ class ResponsavelAdmin(admin.ModelAdmin):
 @admin.register(Entidade)
 class EntidadeAdmin(admin.ModelAdmin):
     list_display = ("id", "nome", "escritorio")
+
+
+@admin.register(Escola)
+class EscolaAdmin(admin.ModelAdmin):
+    list_display = ("id", "codigo", "nome", "entidade")

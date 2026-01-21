@@ -15,6 +15,7 @@ from cobranca.views import (
     AcordoParcelasViewSet,
     BoletoViewSet,
     ImportBoletosView,
+    EscolaViewSet,
 )
 
 app_name = "cobranca"
@@ -26,7 +27,7 @@ router.register("bancos", BancoViewSet, basename="bancos")
 router.register("escritorios", EscritorioViewSet, basename="escritorios")
 router.register("posicaocheques", PosicaoChequeViewSet, basename="posicaocheques"),
 router.register("entidades", EntidadeViewSet, basename="entidades"),
-router.register("escolas", EscritorioViewSet, basename="escolas"),
+router.register("escolas", EscolaViewSet, basename="escolas"),
 router.register("responsaveis", ResponsavelViewSet, basename="responsaveis"),
 router.register("posicaocontratos", PosicaoContratoViewSet, basename="posicaocontratos"),
 router.register("lugares", LugarViewSet, basename="lugares"),

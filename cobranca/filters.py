@@ -86,3 +86,10 @@ class ResponsavelFilter(BaseNomeFilter):
     class Meta:
         model = Responsavel
         fields = ["nome", "entidade"]
+
+
+class EscolaFilter(BaseNomeFilter):
+    entidade = django_filters.CharFilter(
+        field_name="entidade_id",
+        required=False,
+    )
