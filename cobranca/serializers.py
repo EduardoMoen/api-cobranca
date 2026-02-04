@@ -48,25 +48,23 @@ class EntidadeSerializer(serializers.ModelSerializer):
 
 
 class EscolaSerializer(serializers.ModelSerializer):
-    entidade_nome = serializers.CharField(
-        source="entidade.nome",
-        read_only=True,
-    )
-
     class Meta:
         model = Escola
         fields = "__all__"
 
 
-class ResponsavelSerializer(serializers.ModelSerializer):
-    entidade_nome = serializers.CharField(
-        source="entidade.nome",
-        read_only=True,
-    )
+class EscolaListSerializer(EscolaSerializer):
+    entidade = EntidadeSerializer(read_only=True)
 
+
+class ResponsavelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Responsavel
         fields = "__all__"
+
+
+class ResponsavelListSerializer(ResponsavelSerializer):
+    entidade = EntidadeSerializer(read_only=True)
 
 
 class PosicaoContratoSerializer(serializers.ModelSerializer):
@@ -115,3 +113,15 @@ class DividaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Divida
         fields = "__all__"
+
+
+class DividaListSerializer(DividaSerializer):
+    entidade = EntidadeSerializer(read_only=True)
+    responsavel = ResponsavelSerializer(read_only=True)
+    responsavelAtual = ResponsavelSerializer(read_only=True)
+    escola = EscolaSerializer(read_only=True)
+    posicaoContrato = PosicaoContratoSerializer(read_only=True)
+    posicaoCheque = PosicaoChequeSerializer(read_only=True)
+    andamento = AndamentoSerializer(read_only=True)
+    lugar = LugarSerializer(read_only=True)
+    acordo = AcordoSerializer(read_only=True)

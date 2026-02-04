@@ -47,7 +47,7 @@ from cobranca.serializers import (
     AlineaSerializer,
     AcordoSerializer,
     AcordoParcelasSerializer,
-    BoletoSerializer, DividaSerializer,
+    BoletoSerializer, DividaSerializer, ResponsavelListSerializer, EscolaListSerializer, DividaListSerializer,
 )
 from cobranca.services import get_external_data
 
@@ -107,6 +107,12 @@ class EscolaViewSet(ModelViewSet):
 
         return queryset
 
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return EscolaListSerializer
+
+        return EscolaSerializer
+
 
 class ResponsavelViewSet(ModelViewSet):
     serializer_class = ResponsavelSerializer
@@ -119,6 +125,12 @@ class ResponsavelViewSet(ModelViewSet):
         ).filter(entidade__escritorio_id=user.escritorio_id)
 
         return queryset
+
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return ResponsavelListSerializer
+
+        return ResponsavelSerializer
 
 
 class PosicaoContratoViewSet(ModelViewSet):
@@ -181,9 +193,25 @@ class DividaViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Divida.objects.filter(entidade__escritorio_id=user.escritorio_id)
+        queryset = Divida.objects.select_related(
+            "entidade",
+            "responsavel",
+            "responsavelAtual",
+            "escola",
+            "posicaoContrato",
+            "posicaoCheque",
+            "andamento",
+            "lugar",
+            "acordo",
+        ).filter(entidade__escritorio_id=user.escritorio_id)
 
         return queryset
+
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return DividaListSerializer
+
+        return DividaSerializer
 
 
 class ImportBoletosView(APIView):
