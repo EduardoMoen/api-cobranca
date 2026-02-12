@@ -1,6 +1,8 @@
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,6 +35,7 @@ from cobranca.models import (
     Acordo,
     AcordoParcelas, Divida,
 )
+from .pdf.extrato import gerar_extrato_pdf
 from cobranca.serializers import (
     TipoCobrancaSerializer,
     BancoSerializer,
@@ -227,3 +230,19 @@ class ImportBoletosView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def extrato_view(request, responsavel_id):
+    #Busca responsavel
+    responsavel = get_object_or_404(Responsavel, id=responsavel_id)
+
+    dividas = responsavel.dividas.all().order_by("dataVencimento")
+
+    pdf_buffer = gerar_extrato_pdf(responsavel, dividas)
+
+    response = HttpResponse(pdf_buffer, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'inline; filename="extrato_{responsavel.nome}.pdf"'
+    )
+
+    return response
