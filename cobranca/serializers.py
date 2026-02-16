@@ -125,3 +125,6 @@ class DividaListSerializer(DividaSerializer):
     andamento = AndamentoSerializer(read_only=True)
     lugar = LugarSerializer(read_only=True)
     acordo = AcordoSerializer(read_only=True)
+    banco = BancoSerializer(read_only=True)
+    alinea = AlineaSerializer(read_only=True)
+    tipoCobranca = TipoCobrancaSerializer(read_only=True)

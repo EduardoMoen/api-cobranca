@@ -206,12 +206,15 @@ class DividaViewSet(ModelViewSet):
             "andamento",
             "lugar",
             "acordo",
+            "banco",
+            "alinea",
+            "tipoCobranca",
         ).filter(entidade__escritorio_id=user.escritorio_id)
 
         return queryset
 
     def get_serializer_class(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "create", "update", "partial_update"]:
             return DividaListSerializer
 
         return DividaSerializer
