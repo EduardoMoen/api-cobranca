@@ -257,3 +257,12 @@ class Divida(models.Model):
 
     def __str__(self):
         return f"{self.numeroCobranca}"
+
+
+class Indice(models.Model):
+    ano = models.IntegerField()
+    mes = models.IntegerField()
+    indice = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.indice}"
