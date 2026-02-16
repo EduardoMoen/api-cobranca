@@ -214,7 +214,7 @@ class DividaViewSet(ModelViewSet):
         return queryset
 
     def get_serializer_class(self):
-        if self.action in ["list", "retrieve", "create", "update", "partial_update"]:
+        if self.action in ["list", "retrieve"]:
             return DividaListSerializer
 
         return DividaSerializer
