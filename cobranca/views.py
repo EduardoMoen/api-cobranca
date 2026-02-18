@@ -240,7 +240,7 @@ class DividaViewSet(ModelViewSet):
 
 class ImportBoletosView(APIView):
     def post(self, request):
-        data = get_external_data()
+        data = get_external_data(page_size=100)
 
         if not data or "result" not in data:
             return Response({"error": "Não foi possível obter dados da API"}, status=status.HTTP_400_BAD_REQUEST)

@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from cobranca.serializers import ResponsavelImportacaoSerializer
 
 
-def get_external_data():
-    url = "https://7edu-br-accountsreceiving-staging-api.educadventista.org/api/v2/cobrancas/boletos"
+def get_external_data(page_size: int):
+    url = f"https://7edu-br-accountsreceiving-staging-api.educadventista.org/api/v2/cobrancas/boletos/?PageSize={page_size}"
 
     token = os.getenv("API_TOKEN")
 
