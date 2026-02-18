@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -33,7 +34,7 @@ from cobranca.models import (
     Lugar,
     Andamento,
     Acordo,
-    AcordoParcelas, Divida,
+    AcordoParcelas, Divida, ResponsavelImportacao,
 )
 from .pdf.extrato import gerar_extrato_pdf
 from cobranca.serializers import (
@@ -51,8 +52,9 @@ from cobranca.serializers import (
     AcordoSerializer,
     AcordoParcelasSerializer,
     BoletoSerializer, DividaSerializer, ResponsavelListSerializer, EscolaListSerializer, DividaListSerializer,
+    ResponsavelImportacaoSerializer,
 )
-from cobranca.services import get_external_data
+from cobranca.services import get_external_data, importar_responsaveis_com_boletos
 
 
 class TipoCobrancaViewSet(ModelViewSet):
@@ -239,6 +241,7 @@ class DividaViewSet(ModelViewSet):
 class ImportBoletosView(APIView):
     def post(self, request):
         data = get_external_data()
+
         if not data or "result" not in data:
             return Response({"error": "Não foi possível obter dados da API"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -250,6 +253,46 @@ class ImportBoletosView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class ImportarResponsaveisComBoletos(APIView):
+    def post(self, request):
+        data = importar_responsaveis_com_boletos(page_size=100)
+
+        if not data or "result" not in data:
+            return Response(
+                {"error": "Não foi possível obter dados da API"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        items = data["result"]
+
+        total_importados = 0
+        total_erros = 0
+
+        for item in items:
+            cpf = item.get("cpf")
+
+            if ResponsavelImportacao.objects.filter(cpf=cpf).exists():
+                total_erros += 1
+                continue
+
+            serializer = ResponsavelImportacaoSerializer(data=item)
+
+            if serializer.is_valid():
+                serializer.save()
+                total_importados += 1
+            else:
+                print(serializer.errors)
+                total_erros += 1
+
+        return Response(
+            {
+                "total_recebidos": len(items),
+                "total_importados": total_importados,
+                "total_erros": total_erros,
+            },
+            status=status.HTTP_200_OK
+        )
 
 def extrato_view(request, responsavel_id):
     #Busca responsavel

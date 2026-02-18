@@ -266,3 +266,81 @@ class Indice(models.Model):
 
     def __str__(self):
         return f"{self.indice}"
+
+
+class ResponsavelImportacao(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    codigo_escola = models.CharField(max_length=50)
+    cpf = models.CharField(max_length=20)
+    nome = models.CharField(max_length=255)
+    rg = models.CharField(max_length=50, null=True, blank=True)
+    endereco = models.CharField(max_length=255)
+    bairro = models.CharField(max_length=255)
+    cidade = models.CharField(max_length=255)
+    uf = models.CharField(max_length=2)
+    cep = models.CharField(max_length=20)
+    email = models.EmailField()
+    nacionalidade = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.nome
+
+
+class BoletoImportacao(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    responsavel = models.ForeignKey(
+        ResponsavelImportacao,
+        on_delete=models.PROTECT,
+        related_name="boletos",
+    )
+
+    codigo_carne = models.BigIntegerField()
+    codigo_aluno = models.BigIntegerField()
+    numero_carne = models.CharField(max_length=100)
+    data_vencimento = models.DateTimeField()
+
+    valor = models.DecimalField(max_digits=12, decimal_places=2)
+    multa = models.DecimalField(max_digits=12, decimal_places=2)
+    percentual_multa = models.DecimalField(max_digits=5, decimal_places=2)
+    juros_dia = models.DecimalField(max_digits=10, decimal_places=4)
+    percentual_juro = models.DecimalField(max_digits=5, decimal_places=2)
+
+    serie_turma = models.CharField(max_length=100)
+    status_cobranca = models.IntegerField()
+    aluno_nome = models.CharField(max_length=255)
+    aluno_genero = models.CharField(max_length=1)
+    aluno_data_nascimento = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.numero_carne} - {self.aluno_nome}"
+
+
+class TelefoneImportacao(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    responsavel = models.ForeignKey(
+        ResponsavelImportacao,
+        on_delete=models.PROTECT,
+        related_name="telefones",
+    )
+
+    numero = models.CharField(max_length=30)
+    descricao = models.CharField(max_length=255, blank=True)
+    e_principal = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.numero

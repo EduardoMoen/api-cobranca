@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from cobranca.models import Usuario, Escritorio, Responsavel, Entidade, Escola, Divida
+from cobranca.models import Usuario, Escritorio, Responsavel, Entidade, Escola, Divida, Boleto, ResponsavelImportacao, \
+    BoletoImportacao, TelefoneImportacao
 
 
 @admin.register(Usuario)
@@ -35,3 +36,17 @@ class EscolaAdmin(admin.ModelAdmin):
 @admin.register(Divida)
 class DividaAdmin(admin.ModelAdmin):
     list_display = ("id", "numeroCobranca", "entidade")
+
+admin.site.register(Boleto)
+
+@admin.register(ResponsavelImportacao)
+class ResponsavelImportacaoAdmin(admin.ModelAdmin):
+    list_display = ["nome","cpf", "rg"]
+
+@admin.register(BoletoImportacao)
+class BoletoImportacaoAdmin(admin.ModelAdmin):
+    list_display = ["codigo_carne", "valor", "responsavel"]
+
+@admin.register(TelefoneImportacao)
+class TelefoneImportacaoAdmin(admin.ModelAdmin):
+    list_display = ["responsavel", "numero", "descricao"]

@@ -13,7 +13,7 @@ from cobranca.models import (
     Alinea,
     Acordo,
     AcordoParcelas,
-    Boleto, Divida,
+    Boleto, Divida, TelefoneImportacao, BoletoImportacao, ResponsavelImportacao,
 )
 
 
@@ -128,3 +128,97 @@ class DividaListSerializer(DividaSerializer):
     banco = BancoSerializer(read_only=True)
     alinea = AlineaSerializer(read_only=True)
     tipoCobranca = TipoCobrancaSerializer(read_only=True)
+
+
+class TelefoneImportacaoSerializer(serializers.ModelSerializer):
+    ePrincipal = serializers.BooleanField(source="e_principal")
+
+    class Meta:
+        model = TelefoneImportacao
+        fields = [
+            "numero",
+            "descricao",
+            "ePrincipal",
+        ]
+
+
+class BoletoImportacaoSerializer(serializers.ModelSerializer):
+    codigoCarne = serializers.IntegerField(source="codigo_carne")
+    codigoAluno = serializers.IntegerField(source="codigo_aluno")
+    numeroCarne = serializers.CharField(source="numero_carne")
+    dataVencimento = serializers.DateTimeField(source="data_vencimento")
+
+    percentualMulta = serializers.DecimalField(
+        max_digits=5, decimal_places=2, source="percentual_multa"
+    )
+    jurosDia = serializers.DecimalField(
+        max_digits=10, decimal_places=4, source="juros_dia"
+    )
+    percentualJuro = serializers.DecimalField(
+        max_digits=5, decimal_places=2, source="percentual_juro"
+    )
+
+    serieTurma = serializers.CharField(source="serie_turma")
+    statusCobranca = serializers.IntegerField(source="status_cobranca")
+    alunoNome = serializers.CharField(source="aluno_nome")
+    alunoGenero = serializers.CharField(source="aluno_genero")
+    alunoDataNascimento = serializers.DateTimeField(source="aluno_data_nascimento")
+
+    class Meta:
+        model = BoletoImportacao
+        fields = [
+            "codigoCarne",
+            "codigoAluno",
+            "numeroCarne",
+            "dataVencimento",
+            "valor",
+            "multa",
+            "percentualMulta",
+            "jurosDia",
+            "percentualJuro",
+            "serieTurma",
+            "statusCobranca",
+            "alunoNome",
+            "alunoGenero",
+            "alunoDataNascimento",
+        ]
+
+
+class ResponsavelImportacaoSerializer(serializers.ModelSerializer):
+    codigoEscola = serializers.CharField(source="codigo_escola")
+    barrio = serializers.CharField(source="bairro")
+
+    boletos = BoletoImportacaoSerializer(many=True)
+    telefones = TelefoneImportacaoSerializer(many=True)
+
+    class Meta:
+        model = ResponsavelImportacao
+        fields = [
+            "codigoEscola",
+            "cpf",
+            "nome",
+            "rg",
+            "endereco",
+            "barrio",
+            "cidade",
+            "uf",
+            "cep",
+            "email",
+            "nacionalidade",
+            "boletos",
+            "telefones",
+        ]
+
+    def create(self, validated_data):
+        boletos_data = validated_data.pop("boletos", [])
+        telefones_data = validated_data.pop("telefones", [])
+
+        responsavel = ResponsavelImportacao.objects.create(**validated_data)
+
+        for boleto in boletos_data:
+            BoletoImportacao.objects.create(responsavel=responsavel, **boleto)
+
+        for telefone in telefones_data:
+            TelefoneImportacao.objects.create(responsavel=responsavel, **telefone)
+
+        return responsavel

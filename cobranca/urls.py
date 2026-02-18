@@ -15,7 +15,7 @@ from cobranca.views import (
     AcordoParcelasViewSet,
     BoletoViewSet,
     ImportBoletosView,
-    EscolaViewSet, DividaViewSet, extrato_view,
+    EscolaViewSet, DividaViewSet, extrato_view, ImportarResponsaveisComBoletos,
 )
 
 app_name = "cobranca"
@@ -40,5 +40,6 @@ router.register("dividas", DividaViewSet, basename="dividas"),
 
 urlpatterns = router.urls + [
     path("importboletos/", ImportBoletosView.as_view(), name="import-boletos"),
+    path("importar-responsaveis-com-boletos/", ImportarResponsaveisComBoletos.as_view(), name="import-resp"),
     path("responsaveis/<uuid:responsavel_id>/extrato/", extrato_view, name="extrato")
 ]
