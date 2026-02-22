@@ -230,7 +230,7 @@ class DividaViewSet(ModelViewSet):
         return Response(serializer.data, status=response.status_code)
 
     def update(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
+        response = super().update(request, *args, **kwargs)
 
         instance = self.get_queryset().get(pk=response.data["id"])
         serializer = DividaListSerializer(instance, context={request: request})
