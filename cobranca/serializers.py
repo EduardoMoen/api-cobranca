@@ -17,6 +17,15 @@ from cobranca.models import (
 )
 
 
+class NestedPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    def to_internal_value(self, data):
+        # Se vier objeto {"id": "..."}
+        if isinstance(data, dict):
+            data = data.get("id")
+
+        return super().to_internal_value(data)
+
+
 class TipoCobrancaSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoCobranca
@@ -48,6 +57,10 @@ class EntidadeSerializer(serializers.ModelSerializer):
 
 
 class EscolaSerializer(serializers.ModelSerializer):
+    entidade = NestedPrimaryKeyRelatedField(
+        queryset=Entidade.objects.all()
+    )
+
     class Meta:
         model = Escola
         fields = "__all__"
@@ -58,6 +71,10 @@ class EscolaListSerializer(EscolaSerializer):
 
 
 class ResponsavelSerializer(serializers.ModelSerializer):
+    entidade = NestedPrimaryKeyRelatedField(
+        queryset=Entidade.objects.all()
+    )
+
     class Meta:
         model = Responsavel
         fields = "__all__"
@@ -110,6 +127,61 @@ class BoletoSerializer(serializers.ModelSerializer):
 
 
 class DividaSerializer(serializers.ModelSerializer):
+    entidade = NestedPrimaryKeyRelatedField(
+        queryset=Entidade.objects.all()
+    )
+    responsavel = NestedPrimaryKeyRelatedField(
+        queryset=Responsavel.objects.all()
+    )
+    responsavelAtual = NestedPrimaryKeyRelatedField(
+        queryset=Responsavel.objects.all(),
+        required = False,
+        allow_null = True,
+    )
+    escola = NestedPrimaryKeyRelatedField(
+        queryset=Escola.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    posicaoContrato = NestedPrimaryKeyRelatedField(
+        queryset=PosicaoContrato.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    posicaoCheque = NestedPrimaryKeyRelatedField(
+        queryset=PosicaoCheque.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    andamento = NestedPrimaryKeyRelatedField(
+        queryset=Andamento.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    lugar = NestedPrimaryKeyRelatedField(
+        queryset=Lugar.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    acordo = NestedPrimaryKeyRelatedField(
+        queryset=Acordo.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    banco = NestedPrimaryKeyRelatedField(
+        queryset=Banco.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    alinea = NestedPrimaryKeyRelatedField(
+        queryset=Alinea.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    tipoCobranca = NestedPrimaryKeyRelatedField(
+        queryset=TipoCobranca.objects.all()
+    )
+
     class Meta:
         model = Divida
         fields = "__all__"

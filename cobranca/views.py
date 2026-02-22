@@ -118,6 +118,22 @@ class EscolaViewSet(ModelViewSet):
 
         return EscolaSerializer
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+
+        instance = self.get_queryset().get(pk=response.data["id"])
+        serializer = EscolaListSerializer(instance, context={"request": request})
+
+        return Response(serializer.data, status=response.status_code)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+
+        instance = self.get_queryset().get(pk=response.data["id"])
+        serializer = EscolaListSerializer(instance, context={"request": request})
+
+        return Response(serializer.data, status=response.status_code)
+
 
 class ResponsavelViewSet(ModelViewSet):
     serializer_class = ResponsavelSerializer
@@ -136,6 +152,22 @@ class ResponsavelViewSet(ModelViewSet):
             return ResponsavelListSerializer
 
         return ResponsavelSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+
+        instance = self.get_queryset().get(pk=response.data["id"])
+        serializer = ResponsavelListSerializer(instance, context={"request": request})
+
+        return Response(serializer.data, status=response.status_code)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+
+        instance = self.get_queryset().get(pk=response.data["id"])
+        serializer = ResponsavelListSerializer(instance, context={"request": request})
+
+        return Response(serializer.data, status=response.status_code)
 
 
 class PosicaoContratoViewSet(ModelViewSet):
@@ -233,7 +265,7 @@ class DividaViewSet(ModelViewSet):
         response = super().update(request, *args, **kwargs)
 
         instance = self.get_queryset().get(pk=response.data["id"])
-        serializer = DividaListSerializer(instance, context={request: request})
+        serializer = DividaListSerializer(instance, context={"request": request})
 
         return Response(serializer.data, status=response.status_code)
 
