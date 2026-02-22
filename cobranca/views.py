@@ -34,7 +34,7 @@ from cobranca.models import (
     Lugar,
     Andamento,
     Acordo,
-    AcordoParcelas, Divida, ResponsavelImportacao,
+    AcordoParcelas, Divida, ResponsavelImportacao, Indice,
 )
 from .pdf.extrato import gerar_extrato_pdf
 from cobranca.serializers import (
@@ -52,7 +52,7 @@ from cobranca.serializers import (
     AcordoSerializer,
     AcordoParcelasSerializer,
     BoletoSerializer, DividaSerializer, ResponsavelListSerializer, EscolaListSerializer, DividaListSerializer,
-    ResponsavelImportacaoSerializer,
+    ResponsavelImportacaoSerializer, IndiceSerializer,
 )
 from cobranca.services import get_external_data, importar_responsaveis_com_boletos
 
@@ -222,6 +222,11 @@ class AcordoParcelasViewSet(ModelViewSet):
 class BoletoViewSet(ModelViewSet):
     queryset = Boleto.objects.all()
     serializer_class = BoletoSerializer
+
+
+class IndiceViewSet(ModelViewSet):
+    queryset = Indice.objects.all()
+    serializer_class = IndiceSerializer
 
 
 class DividaViewSet(ModelViewSet):

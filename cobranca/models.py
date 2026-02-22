@@ -262,7 +262,7 @@ class Divida(models.Model):
 class Indice(models.Model):
     ano = models.IntegerField()
     mes = models.IntegerField()
-    indice = models.IntegerField()
+    indice = models.DecimalField(max_digits=16, decimal_places=8)
 
     def __str__(self):
         return f"{self.indice}"

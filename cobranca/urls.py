@@ -13,6 +13,7 @@ from cobranca.views import (
     AlineaViewSet,
     AcordoViewSet,
     AcordoParcelasViewSet,
+    IndiceViewSet,
     BoletoViewSet,
     ImportBoletosView,
     EscolaViewSet, DividaViewSet, extrato_view, ImportarResponsaveisComBoletos,
@@ -37,6 +38,7 @@ router.register("acordos", AcordoViewSet, basename="acordos"),
 router.register("acordoparcelas", AcordoParcelasViewSet, basename="acordoparcelas"),
 router.register("boletos", BoletoViewSet, basename="boletos"),
 router.register("dividas", DividaViewSet, basename="dividas"),
+router.register("indices", IndiceViewSet, basename="indices"),
 
 urlpatterns = router.urls + [
     path("importboletos/", ImportBoletosView.as_view(), name="import-boletos"),

@@ -13,7 +13,7 @@ from cobranca.models import (
     Alinea,
     Acordo,
     AcordoParcelas,
-    Boleto, Divida, TelefoneImportacao, BoletoImportacao, ResponsavelImportacao,
+    Boleto, Divida, TelefoneImportacao, BoletoImportacao, ResponsavelImportacao, Indice,
 )
 
 
@@ -294,3 +294,9 @@ class ResponsavelImportacaoSerializer(serializers.ModelSerializer):
             TelefoneImportacao.objects.create(responsavel=responsavel, **telefone)
 
         return responsavel
+
+
+class IndiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Indice
+        fields = "__all__"
