@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from cobranca.models import Usuario, Escritorio, Responsavel, Entidade, Escola, Divida, Boleto, ResponsavelImportacao, \
-    BoletoImportacao, TelefoneImportacao
+    BoletoImportacao, TelefoneImportacao, Indice
 
 
 @admin.register(Usuario)
@@ -50,3 +50,8 @@ class BoletoImportacaoAdmin(admin.ModelAdmin):
 @admin.register(TelefoneImportacao)
 class TelefoneImportacaoAdmin(admin.ModelAdmin):
     list_display = ["responsavel", "numero", "descricao"]
+
+@admin.register(Indice)
+class IndiceAdmin(admin.ModelAdmin):
+    list_display = ["ano", "mes", "indice"]
+    list_filter = ["ano", "mes", "indice"]
