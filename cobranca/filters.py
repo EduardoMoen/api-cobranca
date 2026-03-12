@@ -96,6 +96,14 @@ class EscolaFilter(BaseNomeFilter):
 
 
 class DividaFilter(django_filters.FilterSet):
+    responsavel = django_filters.CharFilter(
+        field_name="responsavel_id",
+        required=False
+    )
+    numeroCobranca = django_filters.CharFilter(
+        field_name="numeroCobranca",
+        required=False,
+    )
     codigo_aluno = django_filters.CharFilter(
         field_name="codigoAluno",
         required=False,
