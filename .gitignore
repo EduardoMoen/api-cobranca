@@ -63,3 +63,5 @@ node_modules/
 # ======================
 # Logs
 # ======================
+/escola.csv
+/divida.csv

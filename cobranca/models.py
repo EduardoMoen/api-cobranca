@@ -253,6 +253,7 @@ class Divida(models.Model):
     remessaSpcBaixa = models.IntegerField(null=True, blank=True)
     dataAcertoJwMantenedora = models.DateField(null=True, blank=True)
     obsJw = models.TextField(null=True, blank=True)
+    statusCancelado = models.BooleanField(null=True, blank=True)
     acordo = models.ForeignKey(Acordo, null=True, blank=True, on_delete=models.PROTECT, related_name="dividas")
 
     def __str__(self):
