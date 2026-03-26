@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 
 from django.db import transaction
@@ -284,6 +285,20 @@ class DividaViewSet(ModelViewSet):
         dividas = Divida.objects.filter(responsavel_id=pk)
         for divida in dividas:
             divida.percentualJuros = valor
+
+            divida.dataInicioJuro = divida.dataVencimento
+            divida.dataAcertoJw = datetime.date.today()
+
+            divida.numeroDias = (
+                divida.dataAcertoJw - divida.dataInicioJuro
+            ).days
+
+            divida.mesInicioCorrecao = divida.dataInicioJuro.month
+            divida.anoInicioCorrecao = divida.dataInicioJuro.year
+
+            divida.mesFimCorrecao = divida.dataInicioJuro.month
+            divida.anoFimCorrecao = divida.dataInicioJuro.year
+
             divida.save()
 
         serializer = DividaListSerializer(dividas, many=True)
