@@ -52,9 +52,9 @@ from cobranca.serializers import (
     AcordoSerializer,
     AcordoParcelasSerializer,
     BoletoSerializer, DividaSerializer, ResponsavelListSerializer, EscolaListSerializer, DividaListSerializer,
-    ResponsavelImportacaoSerializer, IndiceSerializer,
+    ResponsavelImportacaoSerializer, IndiceSerializer, ResponsavelApiSerializer,
 )
-from cobranca.services import get_external_data, importar_responsaveis_com_boletos
+from cobranca.services import get_external_data, importar_responsaveis_com_boletos, get_responsaveis_api, enviar_email
 
 
 class TipoCobrancaViewSet(ModelViewSet):
@@ -291,6 +291,22 @@ class ImportBoletosView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ImportResponsaveisApi(APIView):
+    def post(self, request):
+        data = get_responsaveis_api(page_size=100)
+
+        if not data or "result" not in data:
+            return Response({"error": "Não foi possível obter dados da API"}, status=status.HTTP_400_BAD_REQUEST)
+
+        items = data["result"]
+        serializer = ResponsavelApiSerializer(data=items, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ImportarResponsaveisComBoletos(APIView):
     def post(self, request):
         data = importar_responsaveis_com_boletos(page_size=100)
@@ -305,21 +321,34 @@ class ImportarResponsaveisComBoletos(APIView):
 
         total_importados = 0
         total_erros = 0
+        erros_detalhados = []
 
         for item in items:
             cpf = item.get("cpf")
 
-            if ResponsavelImportacao.objects.filter(cpf=cpf).exists():
-                total_erros += 1
-                continue
+            # if ResponsavelImportacao.objects.filter(cpf=cpf).exists():
+            #     total_erros += 1
+            #     continue
 
             serializer = ResponsavelImportacaoSerializer(data=item)
 
             if serializer.is_valid():
+                if ResponsavelImportacao.objects.filter(cpf=cpf).exists():
+                    erros_detalhados.append({
+                        "cpf": cpf,
+                        "erro": serializer.errors,
+                    })
+                    total_erros += 1
+                    continue
+
                 serializer.save()
                 total_importados += 1
             else:
-                print(serializer.errors)
+                # print(serializer.errors)
+                erros_detalhados.append({
+                    "cpf": cpf,
+                    "erro": serializer.errors,
+                })
                 total_erros += 1
 
         return Response(
@@ -327,6 +356,7 @@ class ImportarResponsaveisComBoletos(APIView):
                 "total_recebidos": len(items),
                 "total_importados": total_importados,
                 "total_erros": total_erros,
+                "erros": erros_detalhados,
             },
             status=status.HTTP_200_OK
         )
@@ -345,3 +375,11 @@ def extrato_view(request, responsavel_id):
     )
 
     return response
+
+
+class EnviarEmail(APIView):
+    def post(self, request):
+
+        enviar_email()
+
+        return Response({"message": "Email enviado!"})

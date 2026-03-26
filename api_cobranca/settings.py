@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 import dj_database_url
 from pathlib import Path
+
+from django.conf.global_settings import EMAIL_BACKEND
 from dotenv import load_dotenv
 from datetime import timedelta
 
@@ -78,7 +80,7 @@ ROOT_URLCONF = "api_cobranca.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [ BASE_DIR/"templates" ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -162,3 +164,15 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = 'email-ssl.com.br'
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+
+EMAIL_HOST_USER = 'cobrancacps@cremovale.com.br'
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
+DEFAULT_FROM_EMAIL = 'Cremovale <cobrancacps@cremovale.com.br>'

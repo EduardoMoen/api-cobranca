@@ -292,6 +292,22 @@ class ResponsavelImportacao(models.Model):
         return self.nome
 
 
+class ResponsavelApi(models.Model):
+    cpf = models.CharField(max_length=100, null=True)
+    nome = models.CharField(max_length=255, null=True)
+    rg = models.CharField(max_length=20, null=True)
+    endereco = models.CharField(max_length=255, null=True)
+    barrio = models.CharField(max_length=255, null=True)
+    cidade = models.CharField(max_length=255, null=True)
+    uf = models.CharField(max_length=2, null=True)
+    cep = models.CharField(max_length=20, null=True)
+    email = models.CharField(max_length=100, null=True)
+    nacionalidade = models.CharField(max_length=50, null=True)
+
+    def __str__(self):
+        return f"{self.nome} - {self.cpf}"
+
+
 class BoletoImportacao(models.Model):
     id = models.UUIDField(
         primary_key=True,

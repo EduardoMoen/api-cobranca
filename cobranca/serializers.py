@@ -13,6 +13,7 @@ from cobranca.models import (
     Alinea,
     Acordo,
     AcordoParcelas,
+    ResponsavelApi,
     Boleto, Divida, TelefoneImportacao, BoletoImportacao, ResponsavelImportacao, Indice,
 )
 
@@ -253,6 +254,22 @@ class BoletoImportacaoSerializer(serializers.ModelSerializer):
             "alunoNome",
             "alunoGenero",
             "alunoDataNascimento",
+        ]
+
+class ResponsavelApiSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResponsavelApi
+        fields = [
+            "cpf",
+            "nome",
+            "rg",
+            "endereco",
+            "barrio",
+            "cidade",
+            "uf",
+            "cep",
+            "email",
+            "nacionalidade",
         ]
 
 
