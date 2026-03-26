@@ -296,8 +296,8 @@ class DividaViewSet(ModelViewSet):
             divida.mesInicioCorrecao = divida.dataInicioJuro.month
             divida.anoInicioCorrecao = divida.dataInicioJuro.year
 
-            divida.mesFimCorrecao = divida.dataInicioJuro.month
-            divida.anoFimCorrecao = divida.dataInicioJuro.year
+            divida.mesFimCorrecao = divida.dataAcertoJw.month
+            divida.anoFimCorrecao = divida.dataAcertoJw.year
 
             divida.save()
 
