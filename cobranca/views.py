@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import transaction
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
 
 from cobranca.filters import (
     TipoCobrancaFilter,
@@ -273,6 +276,30 @@ class DividaViewSet(ModelViewSet):
         serializer = DividaListSerializer(instance, context={"request": request})
 
         return Response(serializer.data, status=response.status_code)
+
+    @action(detail=True, methods=["post"])
+    def calculado(self, request, pk=None):
+        valor = 12.34
+
+        dividas = Divida.objects.filter(responsavel_id=pk)
+        for divida in dividas:
+            divida.percentualJuros = valor
+            divida.save()
+
+        serializer = DividaListSerializer(dividas, many=True)
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def zerado(self, request, pk=None):
+
+        dividas = Divida.objects.filter(responsavel_id=pk)
+
+        dividas.update(percentualJuros=Decimal("0"))
+
+        serializer = DividaListSerializer(dividas, many=True)
+
+        return Response(serializer.data)
 
 
 class ImportBoletosView(APIView):
