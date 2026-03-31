@@ -185,6 +185,7 @@ def gerar_extrato_pdf(responsavel, dividas):
     doc.build(
         elements,
         onFirstPage=cabecalho,
+        onLaterPages=cabecalho,
     )
     buffer.seek(0)
 
