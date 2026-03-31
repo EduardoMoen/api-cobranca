@@ -278,14 +278,29 @@ class DividaViewSet(ModelViewSet):
 
         return Response(serializer.data, status=response.status_code)
 
+    def _buscar_indice(self, indices, ano, mes):
+        valor = 0
+        for indice in indices:
+            if (indice.ano < ano) or (indice.ano == ano and indice.mes <= mes):
+                valor = indice.indice
+            else:
+                break
+
+        return valor
+
     @action(detail=True, methods=["post"])
     def calculado(self, request, pk=None):
-        valor = 12.34
+        valor_multa = Decimal(2)
+        valor_juros = Decimal(1)
+        valor_honorarios = Decimal(10)
 
         dividas = Divida.objects.filter(responsavel_id=pk)
-        for divida in dividas:
-            divida.percentualJuros = valor
 
+        indices = list(
+            Indice.objects.all().order_by("ano", "mes")
+        )
+
+        for divida in dividas:
             divida.dataInicioJuro = divida.dataVencimento
             divida.dataAcertoJw = datetime.date.today()
 
@@ -295,9 +310,34 @@ class DividaViewSet(ModelViewSet):
 
             divida.mesInicioCorrecao = divida.dataInicioJuro.month
             divida.anoInicioCorrecao = divida.dataInicioJuro.year
+            divida.indiceInicial = self._buscar_indice(
+                indices,
+                divida.anoInicioCorrecao,
+                divida.mesInicioCorrecao,
+            )
 
             divida.mesFimCorrecao = divida.dataAcertoJw.month
             divida.anoFimCorrecao = divida.dataAcertoJw.year
+            divida.indiceFinal = self._buscar_indice(
+                indices,
+                divida.anoFimCorrecao,
+                divida.mesFimCorrecao,
+            )
+
+            divida.valorCorrigido = divida.valorCobranca / divida.indiceInicial * divida.indiceFinal
+
+            divida.percentualMulta = valor_multa
+            divida.valorMultaJw = divida.percentualMulta * divida.valorCobranca / 100
+
+            divida.percentualJuros = valor_juros
+            divida.valorJuroJw = divida.valorCorrigido * divida.numeroDias * divida.percentualJuros / 100 / 30
+
+            divida.valorSubtotal = divida.valorCorrigido + divida.valorMultaJw + divida.valorJuroJw
+
+            divida.percentualHonorarios = valor_honorarios
+            divida.valorHonorarios = divida.valorSubtotal * divida.percentualHonorarios / 100
+
+            divida.valorTotal = divida.valorSubtotal + divida.valorHonorarios
 
             divida.save()
 

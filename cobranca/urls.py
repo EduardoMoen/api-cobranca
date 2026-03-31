@@ -43,7 +43,7 @@ router.register("indices", IndiceViewSet, basename="indices"),
 urlpatterns = router.urls + [
     path("importboletos/", ImportBoletosView.as_view(), name="import-boletos"),
     path("importar-responsaveis-com-boletos/", ImportarResponsaveisComBoletos.as_view(), name="import-resp"),
-    path("responsaveis/<uuid:responsavel_id>/extrato/", extrato_view, name="extrato"),
+    path("dividas/<uuid:responsavel_id>/extrato/", extrato_view, name="extrato"),
     path("import-responsaveis-api/", ImportResponsaveisApi.as_view(), name="import-responsaveis-api"),
     path("mandar-email/", EnviarEmail.as_view(), name="enviar-email"),
 ]
