@@ -47,5 +47,5 @@ urlpatterns = router.urls + [
     path("dividas/<uuid:responsavel_id>/extrato/", extrato_view, name="extrato"),
     path("import-responsaveis-api/", ImportResponsaveisApi.as_view(), name="import-responsaveis-api"),
     path("mandar-email/", EnviarEmail.as_view(), name="enviar-email"),
-    path("<uuid:responsavel_id>/teste_carta/", carta_view, name="teste_carta"),
+    path("dividas/<uuid:responsavel_id>/carta/", carta_view, name="carta"),
 ]
