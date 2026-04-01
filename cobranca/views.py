@@ -40,6 +40,7 @@ from cobranca.models import (
     Acordo,
     AcordoParcelas, Divida, ResponsavelImportacao, Indice,
 )
+from .pdf.carta import gerar_carta_pdf
 from .pdf.extrato import gerar_extrato_pdf
 from cobranca.serializers import (
     TipoCobrancaSerializer,
@@ -455,6 +456,17 @@ def extrato_view(request, responsavel_id):
     response["Content-Disposition"] = (
         f'inline; filename="extrato_{responsavel.nome}.pdf"'
     )
+
+    return response
+
+def carta_view(request, responsavel_id):
+    responsavel = get_object_or_404(Responsavel, id=responsavel_id)
+    dividas = responsavel.dividas.all().order_by("dataVencimento")
+
+    pdf_buffer = gerar_carta_pdf(responsavel, dividas)
+
+    response = HttpResponse(pdf_buffer, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="carta.pdf"'
 
     return response
 
