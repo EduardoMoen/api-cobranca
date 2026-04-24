@@ -17,7 +17,7 @@ from cobranca.views import (
     BoletoViewSet,
     ImportBoletosView,
     EscolaViewSet, DividaViewSet, extrato_view, ImportarResponsaveisComBoletos, ImportResponsaveisApi, EnviarEmail,
-    carta_view,
+    carta_view, ValidarResponsaveis, ValidarBoletos, ImportCsvView, todas_carta_view,
 )
 
 app_name = "cobranca"
@@ -48,4 +48,8 @@ urlpatterns = router.urls + [
     path("import-responsaveis-api/", ImportResponsaveisApi.as_view(), name="import-responsaveis-api"),
     path("mandar-email/", EnviarEmail.as_view(), name="enviar-email"),
     path("dividas/<uuid:responsavel_id>/carta/", carta_view, name="carta"),
+    path("todas-cartas/", todas_carta_view, name="todas-as-cartas"),
+    path("validar-responsaveis/", ValidarResponsaveis.as_view(), name="validar-responsaveis"),
+    path("validar-boletos/", ValidarBoletos.as_view(), name="validar-boletos"),
+    path("importar-csv/", ImportCsvView.as_view(), name="importar-csv"),
 ]

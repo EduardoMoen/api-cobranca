@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from cobranca.models import (
     TipoCobranca,
@@ -79,6 +80,17 @@ class ResponsavelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Responsavel
         fields = "__all__"
+
+    def validate_cpf(self, value):
+        return re.sub(r'\D', '', value)
+
+    def create(self, validated_data):
+        obj, _ = Responsavel.objects.update_or_create(
+            cpf=validated_data["cpf"],
+            entidade=validated_data["entidade"],
+            defaults=validated_data,
+        )
+        return obj
 
 
 class ResponsavelListSerializer(ResponsavelSerializer):

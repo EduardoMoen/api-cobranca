@@ -1,4 +1,7 @@
-import datetime
+from datetime import datetime
+import csv
+import re
+
 from decimal import Decimal
 
 from django.db import transaction
@@ -7,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -38,7 +42,7 @@ from cobranca.models import (
     Lugar,
     Andamento,
     Acordo,
-    AcordoParcelas, Divida, ResponsavelImportacao, Indice,
+    AcordoParcelas, Divida, ResponsavelImportacao, Indice, BoletoImportacao,
 )
 from .pdf.carta import gerar_carta_pdf
 from .pdf.extrato import gerar_extrato_pdf
@@ -360,7 +364,7 @@ class DividaViewSet(ModelViewSet):
 
 class ImportBoletosView(APIView):
     def post(self, request):
-        data = get_external_data(page_size=100)
+        data = get_external_data(page_size=1000)
 
         if not data or "result" not in data:
             return Response({"error": "Não foi possível obter dados da API"}, status=status.HTTP_400_BAD_REQUEST)
@@ -392,7 +396,7 @@ class ImportResponsaveisApi(APIView):
 
 class ImportarResponsaveisComBoletos(APIView):
     def post(self, request):
-        data = importar_responsaveis_com_boletos(page_size=100)
+        data = importar_responsaveis_com_boletos(page_size=500)
 
         if not data or "result" not in data:
             return Response(
@@ -403,43 +407,19 @@ class ImportarResponsaveisComBoletos(APIView):
         items = data["result"]
 
         total_importados = 0
-        total_erros = 0
-        erros_detalhados = []
 
         for item in items:
-            cpf = item.get("cpf")
-
-            # if ResponsavelImportacao.objects.filter(cpf=cpf).exists():
-            #     total_erros += 1
-            #     continue
 
             serializer = ResponsavelImportacaoSerializer(data=item)
 
             if serializer.is_valid():
-                if ResponsavelImportacao.objects.filter(cpf=cpf).exists():
-                    erros_detalhados.append({
-                        "cpf": cpf,
-                        "erro": serializer.errors,
-                    })
-                    total_erros += 1
-                    continue
-
                 serializer.save()
                 total_importados += 1
-            else:
-                # print(serializer.errors)
-                erros_detalhados.append({
-                    "cpf": cpf,
-                    "erro": serializer.errors,
-                })
-                total_erros += 1
 
         return Response(
             {
                 "total_recebidos": len(items),
                 "total_importados": total_importados,
-                "total_erros": total_erros,
-                "erros": erros_detalhados,
             },
             status=status.HTTP_200_OK
         )
@@ -459,6 +439,27 @@ def extrato_view(request, responsavel_id):
 
     return response
 
+
+def todas_carta_view(request):
+    responsaveis = Responsavel.objects.all()
+
+    dados =[]
+
+    for responsavel in responsaveis:
+        dividas = responsavel.dividas.all().order_by("dataVencimento")
+        dados.append({
+            "responsavel": responsavel,
+            "dividas": dividas,
+        })
+
+    pdf_buffer = gerar_carta_pdf(responsavel, dividas)
+
+    response = HttpResponse(pdf_buffer, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="carta.pdf"'
+
+    return response
+
+
 def carta_view(request, responsavel_id):
     responsavel = get_object_or_404(Responsavel, id=responsavel_id)
     dividas = responsavel.dividas.all().order_by("dataVencimento")
@@ -477,3 +478,244 @@ class EnviarEmail(APIView):
         enviar_email()
 
         return Response({"message": "Email enviado!"})
+
+
+class ValidarResponsaveis(APIView):
+    def post(self, request):
+
+        importados = ResponsavelImportacao.objects.all()
+
+        criados = 0
+        atualizados = 0
+        erros = 0
+
+        for item in importados.iterator():
+
+            if not item.cpf:
+                continue
+
+            try:
+                entidade = Entidade.objects.get(codigo=item.codigo_escola)
+
+                obj, created = Responsavel.objects.update_or_create(
+                    cpf=item.cpf,
+                    entidade=entidade,
+                    defaults={
+                        "nome": item.nome,
+                        "endereco": item.endereco,
+                        "bairro": item.bairro,
+                        "cidade": item.cidade,
+                        "uf": item.uf,
+                        "cep": item.cep,
+                        "rg": item.rg,
+                    }
+                )
+
+                if created:
+                    criados += 1
+                else:
+                    atualizados += 1
+
+            except Exception as e:
+                erros += 1
+                print(f"Erro no CPF {item.cpf}: {e}")
+
+        return Response({
+            "criados": criados,
+            "atualizados": atualizados,
+        })
+
+
+class ValidarBoletos(APIView):
+    def post(self, request):
+
+        importados = BoletoImportacao.objects.all()
+
+        criados = 0
+        atualizados = 0
+        erros = 0
+
+        tipoCobranca = TipoCobranca.objects.get(id=1)
+
+        for item in importados.iterator():
+
+            if not item.numero_carne:
+                continue
+
+            try:
+                entidade = Entidade.objects.get(codigo=item.responsavel.codigo_escola)
+                responsavel = Responsavel.objects.filter(cpf=item.responsavel.cpf).first()
+
+                obj, created = Divida.objects.update_or_create(
+                    numeroCobranca=item.numero_carne,
+                    entidade=entidade,
+                    defaults={
+                        "responsavel": responsavel,
+                        "tipoCobranca": tipoCobranca,
+                        "dataVencimento": item.data_vencimento,
+                        "valorCobranca": item.valor,
+                        "valorMulta": item.multa,
+                        "codigoAluno": item.codigo_aluno,
+                        "percentualMulta": item.percentual_multa,
+                        "percentualJuros": item.percentual_juro,
+                        "serie": item.serie_turma,
+                        "nomeAluno": item.aluno_nome,
+                    }
+                )
+
+                if created:
+                    criados += 1
+                else:
+                    atualizados += 1
+
+            except Exception as e:
+                erros += 1
+                print(f"Erro no Codigo {item.codigo_carne}: {e}")
+
+        return Response({
+            "criados": criados,
+            "atualizados": atualizados,
+            "erros": erros
+        })
+
+class ImportCsvView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+    def post(self, request):
+        file = request.FILES.get("file")
+
+        if not file:
+            return Response({"error": "Arquivo não enviado"}, status=400)
+
+        decoded_file = file.read().decode("utf-8").splitlines()
+        reader = csv.reader(decoded_file, delimiter=';')
+        next(reader, None)
+
+        novos_responsaveis = []
+        novas_dividas = []
+        erros = []
+        responsaveis_sucesso = 0
+        dividas_sucesso = 0
+
+        entidade = Entidade.objects.get(codigo="123456") # Codigo do Grupo Objetivo
+
+        escolas_cache = {
+            e.codigo: e for e in Escola.objects.all()
+        }
+
+        rows = list(reader)
+
+        for i, row in enumerate(rows, start=1):
+
+            data = {
+                "nome": row[2],
+                "cpf": row[1],
+                "endereco": row[3],
+                "complemento": row[4],
+                "bairro": row[6],
+                "cidade": row[7],
+                "uf": row[8],
+                "cep": row[9],
+                "entidade": entidade.id
+            }
+
+            serializer = ResponsavelSerializer(data=data)
+
+            if serializer.is_valid():
+                serializer.save()
+                # obj = Responsavel(
+                #     nome=serializer.validated_data["nome"],
+                #     cpf=serializer.validated_data["cpf"],
+                #     endereco=serializer.validated_data["endereco"],
+                #     complemento=serializer.validated_data["complemento"],
+                #     bairro=serializer.validated_data["bairro"],
+                #     cidade=serializer.validated_data["cidade"],
+                #     uf=serializer.validated_data["uf"],
+                #     cep=serializer.validated_data["cep"],
+                #     entidade=entidade,
+                # )
+                # novos_responsaveis.append(obj)
+                responsaveis_sucesso += 1
+            else:
+                erros.append({
+                    "linha": i,
+                    "erro": serializer.errors,
+                    "dados": {
+                        **data,
+                        "entidade": entidade.id
+                    }
+                })
+
+        # Responsavel.objects.bulk_create(novos_responsaveis)
+
+        responsaveis_cache = {
+            r.cpf: r for r in Responsavel.objects.all()
+        }
+
+        def limpar_cpf(value):
+            return re.sub(r'\D', '', value)
+
+        def formatar_data(data_str):
+            return datetime.strptime(data_str, "%d/%m/%Y").date()
+
+        def formatar_valor(valor):
+            if not valor:
+                return None
+            return valor.replace(".", "").replace(",", ".")
+
+        def formata_serie(turma_string):
+            turma_string = turma_string.lower()
+
+            return turma_string.replace("turma:", "").strip()[:20]
+
+        for i, row in enumerate(rows, start=1):
+            responsavel = responsaveis_cache.get(limpar_cpf(row[1]))
+            escola = escolas_cache.get(row[0])
+
+            data = {
+                "entidade": entidade.id,
+                "responsavel": responsavel.id,
+                "responsavelAtual": responsavel.id,
+                "tipoCobranca": 1,
+                "numeroCobranca": row[11],
+                "dataVencimento": formatar_data(row[21]),
+                "valorCobranca": formatar_valor(row[17]),
+                "escola": escola.id,
+                "nomeAluno": row[13],
+                "codigoAluno": row[12],
+                "serie": formata_serie(row[16]),
+            }
+
+            serializer = DividaSerializer(data=data)
+
+            if serializer.is_valid():
+                obj = Divida(
+                    entidade=entidade,
+                    responsavel=responsavel,
+                    responsavelAtual=responsavel,
+                    tipoCobranca=serializer.validated_data["tipoCobranca"],
+                    numeroCobranca=serializer.validated_data["numeroCobranca"],
+                    dataVencimento=serializer.validated_data["dataVencimento"],
+                    valorCobranca=serializer.validated_data["valorCobranca"],
+                    escola=escola,
+                    nomeAluno=serializer.validated_data["nomeAluno"],
+                    codigoAluno=serializer.validated_data["codigoAluno"],
+                )
+                novas_dividas.append(obj)
+                dividas_sucesso += 1
+            else:
+                erros.append({
+                    "linha": i,
+                    "erro": serializer.errors,
+                    "dados": {
+                        **data,
+                        "entidade": entidade.id
+                    }
+                })
+
+        Divida.objects.bulk_create(novas_dividas)
+
+        return Response({
+            "responsaveis-importados": responsaveis_sucesso,
+            "dividas-importadas": dividas_sucesso,
+            "erros": erros
+        }, status=status.HTTP_200_OK)
