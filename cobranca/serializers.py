@@ -15,7 +15,7 @@ from cobranca.models import (
     Acordo,
     AcordoParcelas,
     ResponsavelApi,
-    Boleto, Divida, TelefoneImportacao, BoletoImportacao, ResponsavelImportacao, Indice,
+    BoletoApi, Divida, TelefoneImportacao, BoletoImportacao, ResponsavelImportacao, Indice,
 )
 
 
@@ -135,7 +135,7 @@ class AcordoParcelasSerializer(serializers.ModelSerializer):
 
 class BoletoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Boleto
+        model = BoletoApi
         fields = "__all__"
 
 

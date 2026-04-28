@@ -38,8 +38,7 @@ def cabecalho(canvas, doc):
     canvas.restoreState()
 
 
-
-def gerar_carta_pdf(responsavel, dividas):
+def carta_por_entidade(dividas):
     buffer = BytesIO()
 
     doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -88,66 +87,74 @@ def gerar_carta_pdf(responsavel, dividas):
         """
 
     from collections import defaultdict
-    dividas_por_aluno = defaultdict(list)
 
+    dividas_por_responsavel = defaultdict(list)
     for divida in dividas:
-        dividas_por_aluno[divida.nomeAluno].append(divida)
+        dividas_por_responsavel[divida.responsavel].append(divida)
 
-    total_alunos = len(dividas_por_aluno)
-    contador = 0
+    for responsavel, divs_resp in dividas_por_responsavel.items():
 
-    for nome_aluno, lista_dividas in dividas_por_aluno.items():
-        contador += 1
+        dividas_por_aluno = defaultdict(list)
 
-        numero_aluno = lista_dividas[0].codigoAluno
+        for divida in divs_resp:
+            dividas_por_aluno[divida.nomeAluno].append(divida)
 
-        if not lista_dividas:
-            continue
+        total_alunos = len(dividas_por_aluno)
+        contador = 0
 
-        elements.append(Spacer(1, 40))
+        for nome_aluno, lista_dividas in dividas_por_aluno.items():
+            contador += 1
 
-        elements.append(Paragraph(f"Campinas, {datetime.date.today().strftime("%d/%m/%Y")}."))
+            numero_aluno = lista_dividas[0].codigoAluno
 
-        elements.append(Spacer(1, 40))
+            if not lista_dividas:
+                continue
 
-        elements.append(Paragraph(f"Ilmo(a). Sr(a)."))
-        elements.append(Paragraph(f"{responsavel.nome}"))
-        elements.append(Paragraph(f"Aluno: {nome_aluno} - {numero_aluno}"))
-        elements.append(Paragraph(f"{responsavel.endereco} - {responsavel.bairro}"))
-        elements.append(Paragraph(f"{responsavel.cep} {responsavel.cidade} - {responsavel.uf}"))
+            elements.append(Spacer(1, 40))
 
-        elements.append(Spacer(1, 40))
+            elements.append(Paragraph(f"Campinas, {datetime.date.today().strftime("%d/%m/%Y")}."))
 
-        elements.append(Paragraph(texto1, texto_style))
+            elements.append(Spacer(1, 40))
 
-        elements.append(Spacer(1, 30))
+            elements.append(Paragraph(f"Ilmo(a). Sr(a)."))
+            elements.append(Paragraph(f"{responsavel.nome}"))
+            elements.append(Paragraph(f"Aluno: {nome_aluno} - {numero_aluno}"))
+            elements.append(Paragraph(f"{responsavel.endereco} - {responsavel.bairro}"))
+            elements.append(Paragraph(f"{responsavel.cep} {responsavel.cidade} - {responsavel.uf}"))
 
-        texto4 = ""
-        for divida in lista_dividas:
-            texto4 += divida.numeroCobranca + ", "
-        elements.append(Paragraph(f"{texto4[:-2]};"))
+            elements.append(Spacer(1, 40))
 
-        elements.append(Spacer(1, 30))
+            elements.append(Paragraph(texto1, texto_style))
 
-        elements.append(Paragraph(texto2, texto_style))
+            elements.append(Spacer(1, 30))
 
-        elements.append(Spacer(1, 30))
+            texto4 = ""
+            for divida in lista_dividas:
+                texto4 += divida.numeroCobranca + ", "
+            elements.append(Paragraph(f"{texto4[:-2]};"))
 
-        elements.append(Paragraph(texto3, texto_style))
+            elements.append(Spacer(1, 30))
 
-        elements.append(Spacer(1, 80))
+            elements.append(Paragraph(texto2, texto_style))
 
-        elements.append(Paragraph("Atenciosamente,"))
+            elements.append(Spacer(1, 30))
 
-        elements.append(Spacer(1, 100))
+            elements.append(Paragraph(texto3, texto_style))
 
-        elements.append(Paragraph("Cremovale Cobranças e Serviços Ltda"))
+            elements.append(Spacer(1, 80))
+
+            elements.append(Paragraph("Atenciosamente,"))
+
+            elements.append(Spacer(1, 100))
+
+            elements.append(Paragraph("Cremovale Cobranças e Serviços Ltda"))
 
 
 
-        if contador < total_alunos:
-            elements.append(PageBreak())
+            if contador < total_alunos:
+                elements.append(PageBreak())
 
+        elements.append(PageBreak())
 
     doc.build(
         elements,

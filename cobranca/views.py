@@ -38,13 +38,14 @@ from cobranca.models import (
     Responsavel,
     PosicaoContrato,
     Alinea,
-    Boleto,
+    BoletoApi,
     Lugar,
     Andamento,
     Acordo,
     AcordoParcelas, Divida, ResponsavelImportacao, Indice, BoletoImportacao,
 )
 from .pdf.carta import gerar_carta_pdf
+from .pdf.carta_por_entidade import carta_por_entidade
 from .pdf.extrato import gerar_extrato_pdf
 from cobranca.serializers import (
     TipoCobrancaSerializer,
@@ -228,11 +229,6 @@ class AcordoParcelasViewSet(ModelViewSet):
     serializer_class = AcordoParcelasSerializer
 
 
-class BoletoViewSet(ModelViewSet):
-    queryset = Boleto.objects.all()
-    serializer_class = BoletoSerializer
-
-
 class IndiceViewSet(ModelViewSet):
     queryset = Indice.objects.all()
     serializer_class = IndiceSerializer
@@ -380,7 +376,7 @@ class ImportBoletosView(APIView):
 
 class ImportResponsaveisApi(APIView):
     def post(self, request):
-        data = get_responsaveis_api(page_size=100)
+        data = get_responsaveis_api(page_size=1000)
 
         if not data or "result" not in data:
             return Response({"error": "Não foi possível obter dados da API"}, status=status.HTTP_400_BAD_REQUEST)
@@ -406,20 +402,29 @@ class ImportarResponsaveisComBoletos(APIView):
 
         items = data["result"]
 
+        erros = []
         total_importados = 0
 
-        for item in items:
+        for i, item in enumerate(items, start=1):
 
             serializer = ResponsavelImportacaoSerializer(data=item)
 
             if serializer.is_valid():
                 serializer.save()
                 total_importados += 1
+            else:
+                erros.append({
+                    "linha": i,
+                    "erros": serializer.errors,
+                    "dados": item,
+                })
 
         return Response(
             {
                 "total_recebidos": len(items),
                 "total_importados": total_importados,
+                "total_erros": len(erros),
+                "erros": erros,
             },
             status=status.HTTP_200_OK
         )
@@ -440,29 +445,9 @@ def extrato_view(request, responsavel_id):
     return response
 
 
-def todas_carta_view(request):
-    responsaveis = Responsavel.objects.all()
-
-    dados =[]
-
-    for responsavel in responsaveis:
-        dividas = responsavel.dividas.all().order_by("dataVencimento")
-        dados.append({
-            "responsavel": responsavel,
-            "dividas": dividas,
-        })
-
-    pdf_buffer = gerar_carta_pdf(responsavel, dividas)
-
-    response = HttpResponse(pdf_buffer, content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="carta.pdf"'
-
-    return response
-
-
 def carta_view(request, responsavel_id):
     responsavel = get_object_or_404(Responsavel, id=responsavel_id)
-    dividas = responsavel.dividas.all().order_by("dataVencimento")
+    dividas = responsavel.dividas.all().order_by("nomeAluno")
 
     pdf_buffer = gerar_carta_pdf(responsavel, dividas)
 
@@ -471,6 +456,17 @@ def carta_view(request, responsavel_id):
 
     return response
 
+
+def carta_por_entidade_view(request, entidade_id):
+    entidade = get_object_or_404(Entidade, id=entidade_id)
+    dividas = entidade.dividas.all().order_by("responsavel")
+
+    pdf_buffer = carta_por_entidade(dividas)
+
+    response = HttpResponse(pdf_buffer, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="Carta_entidade.pdf"'
+
+    return response
 
 class EnviarEmail(APIView):
     def post(self, request):
@@ -495,7 +491,7 @@ class ValidarResponsaveis(APIView):
                 continue
 
             try:
-                entidade = Entidade.objects.get(codigo=item.codigo_escola)
+                entidade = Entidade.objects.get(codigo=item.codigo_escola[:6])
 
                 obj, created = Responsavel.objects.update_or_create(
                     cpf=item.cpf,
@@ -543,13 +539,13 @@ class ValidarBoletos(APIView):
                 continue
 
             try:
-                entidade = Entidade.objects.get(codigo=item.responsavel.codigo_escola)
+                entidade = Entidade.objects.get(codigo=item.responsavel.codigo_escola[:6])
                 responsavel = Responsavel.objects.filter(cpf=item.responsavel.cpf).first()
 
                 obj, created = Divida.objects.update_or_create(
-                    numeroCobranca=item.numero_carne,
-                    entidade=entidade,
+                    codigoCobranca=item.codigo_carne,
                     defaults={
+                        "numeroCobranca": item.numero_carne,
                         "responsavel": responsavel,
                         "tipoCobranca": tipoCobranca,
                         "dataVencimento": item.data_vencimento,
@@ -560,6 +556,7 @@ class ValidarBoletos(APIView):
                         "percentualJuros": item.percentual_juro,
                         "serie": item.serie_turma,
                         "nomeAluno": item.aluno_nome,
+                        "entidade": entidade,
                     }
                 )
 

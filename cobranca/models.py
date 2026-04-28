@@ -144,7 +144,7 @@ class AcordoParcelas(models.Model):
         return f"{self.acordo} {self.vencimento}"
 
 
-class Boleto(models.Model):
+class BoletoApi(models.Model):
     codigoEscola = models.CharField(max_length=255)
     codigoAluno = models.IntegerField()
     codigoCarne = models.IntegerField()
@@ -178,6 +178,7 @@ class Divida(models.Model):
     entidade = models.ForeignKey(Entidade, on_delete=models.PROTECT, related_name="dividas")
     responsavel = models.ForeignKey(Responsavel, on_delete=models.PROTECT, related_name="dividas")
     tipoCobranca = models.ForeignKey(TipoCobranca, on_delete=models.PROTECT, related_name="dividas")
+    codigoCobranca = models.IntegerField(null=True, blank=True)
     numeroCobranca = models.CharField(max_length=20)
     dataPrimeiraImportacao = models.DateField(null=True, blank=True)
     dataUltimaImportacao = models.DateField(null=True, blank=True)
@@ -285,7 +286,7 @@ class ResponsavelImportacao(models.Model):
     cidade = models.CharField(max_length=255)
     uf = models.CharField(max_length=2)
     cep = models.CharField(max_length=20)
-    email = models.EmailField()
+    email = models.EmailField(null=True, blank=True)
     nacionalidade = models.CharField(max_length=100)
 
     def __str__(self):
@@ -327,7 +328,7 @@ class BoletoImportacao(models.Model):
     data_vencimento = models.DateTimeField()
 
     valor = models.DecimalField(max_digits=12, decimal_places=2)
-    multa = models.DecimalField(max_digits=12, decimal_places=2)
+    multa = models.DecimalField(max_digits=12, decimal_places=6)
     percentual_multa = models.DecimalField(max_digits=5, decimal_places=2)
     juros_dia = models.DecimalField(max_digits=10, decimal_places=4)
     percentual_juro = models.DecimalField(max_digits=5, decimal_places=2)

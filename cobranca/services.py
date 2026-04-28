@@ -30,7 +30,9 @@ def get_external_data(page_size: int):
         return None
 
 def get_responsaveis_api(page_size: int):
-    url = f"https://7edu-br-accountsreceiving-staging-api.educadventista.org/api/v2/cobrancas/responsaveis/?PageSize={page_size}"
+    # url = f"https://7edu-br-accountsreceiving-staging-api.educadventista.org/api/v2/cobrancas/responsaveis/?PageSize={page_size}"
+    url = f"https://7edu-br-accountsreceiving-api.educadventista.org/api/v2/cobrancas/responsaveis/?PageSize={page_size}"
+
 
     token = os.getenv("API_TOKEN")
 
