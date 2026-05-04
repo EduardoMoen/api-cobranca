@@ -322,6 +322,12 @@ class BoletoImportacao(models.Model):
         related_name="boletos",
     )
 
+    escola = models.ForeignKey(
+        Escola,
+        on_delete=models.PROTECT,
+        related_name="boletos",
+    )
+
     codigo_carne = models.BigIntegerField()
     codigo_aluno = models.BigIntegerField()
     numero_carne = models.CharField(max_length=100)

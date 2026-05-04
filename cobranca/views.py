@@ -468,6 +468,17 @@ def carta_por_entidade_view(request, entidade_id):
 
     return response
 
+def carta_por_escola_view(request, escola_id):
+    escola = get_object_or_404(Escola, id=escola_id)
+    dividas = escola.dividas.all().order_by("responsavel")
+
+    pdf_buffer = carta_por_entidade(dividas)
+
+    response = HttpResponse(pdf_buffer, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="Carta_escola.pdf"'
+
+    return response
+
 class EnviarEmail(APIView):
     def post(self, request):
 
@@ -533,14 +544,22 @@ class ValidarBoletos(APIView):
 
         tipoCobranca = TipoCobranca.objects.get(id=1)
 
-        for item in importados.iterator():
+        entidades = {e.codigo: e for e in Entidade.objects.all()}
+        responsaveis = {r.cpf: r for r in Responsavel.objects.all()}
+
+        for item in importados:
 
             if not item.numero_carne:
                 continue
 
             try:
-                entidade = Entidade.objects.get(codigo=item.responsavel.codigo_escola[:6])
-                responsavel = Responsavel.objects.filter(cpf=item.responsavel.cpf).first()
+                entidade_codigo = item.responsavel.codigo_escola[:6]
+
+                entidade = entidades.get(entidade_codigo)
+                if not entidade:
+                    raise Exception(f"Entidade não encontrada: {entidade}")
+
+                responsavel = responsaveis.get(item.responsavel.cpf)
 
                 obj, created = Divida.objects.update_or_create(
                     codigoCobranca=item.codigo_carne,
@@ -557,6 +576,7 @@ class ValidarBoletos(APIView):
                         "serie": item.serie_turma,
                         "nomeAluno": item.aluno_nome,
                         "entidade": entidade,
+                        "escola": item.escola,
                     }
                 )
 

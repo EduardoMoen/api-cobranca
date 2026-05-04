@@ -316,8 +316,25 @@ class ResponsavelImportacaoSerializer(serializers.ModelSerializer):
 
         responsavel = ResponsavelImportacao.objects.create(**validated_data)
 
+        try:
+            cod_entidade, cod_escola = responsavel.codigo_escola.split("|")
+        except:
+            cod_entidade = responsavel.codigo_escola
+            cod_escola = "1"
+
+        entidade = Entidade.objects.get(codigo=cod_entidade)
+
+        escola = Escola.objects.filter(
+            entidade=entidade,
+            codigo=cod_escola,
+        ).first()
+
         for boleto in boletos_data:
-            BoletoImportacao.objects.create(responsavel=responsavel, **boleto)
+            BoletoImportacao.objects.create(
+                responsavel=responsavel,
+                escola=escola,
+                **boleto
+            )
 
         for telefone in telefones_data:
             TelefoneImportacao.objects.create(responsavel=responsavel, **telefone)
