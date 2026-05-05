@@ -14,7 +14,7 @@ import os
 import dj_database_url
 from pathlib import Path
 
-from django.conf.global_settings import EMAIL_BACKEND
+from django.conf.global_settings import EMAIL_BACKEND, CSRF_TRUSTED_ORIGINS
 from dotenv import load_dotenv
 from datetime import timedelta
 
@@ -37,6 +37,10 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["*"]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.up.railway.app",
+]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
