@@ -15,7 +15,13 @@ from cobranca.models import (
     Acordo,
     AcordoParcelas,
     ResponsavelApi,
-    BoletoApi, Divida, TelefoneImportacao, BoletoImportacao, ResponsavelImportacao, Indice,
+    BoletoApi,
+    Divida,
+    TelefoneImportacao,
+    BoletoImportacao,
+    ResponsavelImportacao,
+    Indice,
+    Usuario,
 )
 
 
@@ -26,6 +32,12 @@ class NestedPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
             data = data.get("id")
 
         return super().to_internal_value(data)
+
+
+class UsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ["id", "username", "escritorio"]
 
 
 class TipoCobrancaSerializer(serializers.ModelSerializer):
@@ -187,6 +199,9 @@ class DividaSerializer(serializers.ModelSerializer):
     tipoCobranca = NestedPrimaryKeyRelatedField(
         queryset=TipoCobranca.objects.all()
     )
+    alterado_por = NestedPrimaryKeyRelatedField(
+        queryset=Usuario.objects.all()
+    )
 
     class Meta:
         model = Divida
@@ -207,10 +222,7 @@ class DividaListSerializer(DividaSerializer):
     banco = BancoSerializer(read_only=True)
     alinea = AlineaSerializer(read_only=True)
     tipoCobranca = TipoCobrancaSerializer(read_only=True)
-
-    alterado_por = serializers.CharField(
-        read_only=True,
-    )
+    alterado_por = UsuarioSerializer(read_only=True)
 
 
 class TelefoneImportacaoSerializer(serializers.ModelSerializer):
