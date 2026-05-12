@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 import csv
 import re
 
@@ -624,15 +624,17 @@ class ImportCsvView(APIView):
         for i, row in enumerate(rows, start=1):
 
             data = {
-                "nome": row[2],
-                "cpf": row[1],
-                "endereco": row[3],
-                "complemento": row[4],
-                "bairro": row[6],
-                "cidade": row[7],
-                "uf": row[8],
-                "cep": row[9],
-                "entidade": entidade.id
+                "nome": row[3],
+                "cpf": row[2],
+                "rg": row[4],
+                "endereco": row[5],
+                "complemento": row[6],
+                "bairro": row[8],
+                "cidade": row[9],
+                "uf": row[10],
+                "cep": row[11],
+                "telefones": row[12],
+                "entidade": entidade.id,
             }
 
             serializer = ResponsavelSerializer(data=data)
@@ -642,12 +644,14 @@ class ImportCsvView(APIView):
                 # obj = Responsavel(
                 #     nome=serializer.validated_data["nome"],
                 #     cpf=serializer.validated_data["cpf"],
+                #     rg=serializer.validated_data["rg"],
                 #     endereco=serializer.validated_data["endereco"],
                 #     complemento=serializer.validated_data["complemento"],
                 #     bairro=serializer.validated_data["bairro"],
                 #     cidade=serializer.validated_data["cidade"],
                 #     uf=serializer.validated_data["uf"],
                 #     cep=serializer.validated_data["cep"],
+                #     telefones=serializer.validated_data["telefones"],
                 #     entidade=entidade,
                 # )
                 # novos_responsaveis.append(obj)
@@ -672,7 +676,7 @@ class ImportCsvView(APIView):
             return re.sub(r'\D', '', value)
 
         def formatar_data(data_str):
-            return datetime.strptime(data_str, "%d/%m/%Y").date()
+            return datetime.datetime.strptime(data_str, "%d/%m/%Y").date()
 
         def formatar_valor(valor):
             if not valor:
@@ -685,21 +689,21 @@ class ImportCsvView(APIView):
             return turma_string.replace("turma:", "").strip()[:20]
 
         for i, row in enumerate(rows, start=1):
-            responsavel = responsaveis_cache.get(limpar_cpf(row[1]))
-            escola = escolas_cache.get(row[0])
+            responsavel = responsaveis_cache.get(limpar_cpf(row[2]))
+            escola = escolas_cache.get(row[1])
 
             data = {
                 "entidade": entidade.id,
                 "responsavel": responsavel.id,
                 "responsavelAtual": responsavel.id,
                 "tipoCobranca": 1,
-                "numeroCobranca": row[11],
-                "dataVencimento": formatar_data(row[21]),
+                "numeroCobranca": row[15],
+                "dataVencimento": formatar_data(row[16]),
                 "valorCobranca": formatar_valor(row[17]),
                 "escola": escola.id,
-                "nomeAluno": row[13],
-                "codigoAluno": row[12],
-                "serie": formata_serie(row[16]),
+                "nomeAluno": row[19],
+                "codigoAluno": row[18],
+                "serie": formata_serie(row[20]),
             }
 
             serializer = DividaSerializer(data=data)
