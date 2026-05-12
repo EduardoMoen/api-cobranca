@@ -4,6 +4,7 @@ import re
 
 from decimal import Decimal
 
+from django.utils import timezone
 from django.db import transaction
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -270,6 +271,11 @@ class DividaViewSet(ModelViewSet):
         serializer = DividaListSerializer(instance, context={"request": request})
 
         return Response(serializer.data, status=response.status_code)
+
+    def perform_update(self, serializer):
+        serializer.save(
+            alterado_por=self.request.user,
+        )
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
@@ -607,7 +613,7 @@ class ImportCsvView(APIView):
         reader = csv.reader(decoded_file, delimiter=';')
         next(reader, None)
 
-        novos_responsaveis = []
+        novos_responsaveis = {}
         novas_dividas = []
         erros = []
         responsaveis_sucesso = 0
@@ -616,7 +622,7 @@ class ImportCsvView(APIView):
         entidade = Entidade.objects.get(codigo="123456") # Codigo do Grupo Objetivo
 
         escolas_cache = {
-            e.codigo: e for e in Escola.objects.all()
+            e.codigo: e for e in Escola.objects.filter(entidade=entidade)
         }
 
         rows = list(reader)
@@ -640,20 +646,21 @@ class ImportCsvView(APIView):
             serializer = ResponsavelSerializer(data=data)
 
             if serializer.is_valid():
-                serializer.save()
-                # obj = Responsavel(
-                #     nome=serializer.validated_data["nome"],
-                #     cpf=serializer.validated_data["cpf"],
-                #     rg=serializer.validated_data["rg"],
-                #     endereco=serializer.validated_data["endereco"],
-                #     complemento=serializer.validated_data["complemento"],
-                #     bairro=serializer.validated_data["bairro"],
-                #     cidade=serializer.validated_data["cidade"],
-                #     uf=serializer.validated_data["uf"],
-                #     cep=serializer.validated_data["cep"],
-                #     telefones=serializer.validated_data["telefones"],
-                #     entidade=entidade,
-                # )
+                obj = Responsavel(
+                    nome=serializer.validated_data["nome"],
+                    cpf=serializer.validated_data["cpf"],
+                    rg=serializer.validated_data["rg"],
+                    endereco=serializer.validated_data["endereco"],
+                    complemento=serializer.validated_data["complemento"],
+                    bairro=serializer.validated_data["bairro"],
+                    cidade=serializer.validated_data["cidade"],
+                    uf=serializer.validated_data["uf"],
+                    cep=serializer.validated_data["cep"],
+                    telefones=serializer.validated_data["telefones"],
+                    entidade=entidade,
+                )
+                key = (entidade.id, serializer.validated_data["cpf"])
+                novos_responsaveis[key] = obj
                 # novos_responsaveis.append(obj)
                 responsaveis_sucesso += 1
             else:
@@ -666,7 +673,22 @@ class ImportCsvView(APIView):
                     }
                 })
 
-        # Responsavel.objects.bulk_create(novos_responsaveis)
+        Responsavel.objects.bulk_create(
+            list(novos_responsaveis.values()),
+            update_conflicts=True,
+            unique_fields=["entidade", "cpf"],
+            update_fields=[
+                "nome",
+                "rg",
+                "endereco",
+                "complemento",
+                "bairro",
+                "cidade",
+                "uf",
+                "cep",
+                "telefones",
+            ]
+        )
 
         responsaveis_cache = {
             r.cpf: r for r in Responsavel.objects.all()
@@ -720,6 +742,7 @@ class ImportCsvView(APIView):
                     escola=escola,
                     nomeAluno=serializer.validated_data["nomeAluno"],
                     codigoAluno=serializer.validated_data["codigoAluno"],
+                    serie=serializer.validated_data["serie"],
                 )
                 novas_dividas.append(obj)
                 dividas_sucesso += 1
@@ -733,7 +756,22 @@ class ImportCsvView(APIView):
                     }
                 })
 
-        Divida.objects.bulk_create(novas_dividas)
+        Divida.objects.bulk_create(
+            novas_dividas,
+            update_conflicts=True,
+            unique_fields=["numeroCobranca", "entidade"],
+            update_fields=[
+                "responsavel",
+                "responsavelAtual",
+                "tipoCobranca",
+                "dataVencimento",
+                "valorCobranca",
+                "escola",
+                "nomeAluno",
+                "codigoAluno",
+                "serie",
+            ],
+        )
 
         return Response({
             "responsaveis-importados": responsaveis_sucesso,

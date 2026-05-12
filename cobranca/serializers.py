@@ -80,17 +80,10 @@ class ResponsavelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Responsavel
         fields = "__all__"
+        validators = []
 
     def validate_cpf(self, value):
         return re.sub(r'\D', '', value)
-
-    def create(self, validated_data):
-        obj, _ = Responsavel.objects.update_or_create(
-            cpf=validated_data["cpf"],
-            entidade=validated_data["entidade"],
-            defaults=validated_data,
-        )
-        return obj
 
 
 class ResponsavelListSerializer(ResponsavelSerializer):
@@ -198,6 +191,7 @@ class DividaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Divida
         fields = "__all__"
+        validators = []
 
 
 class DividaListSerializer(DividaSerializer):
@@ -213,6 +207,10 @@ class DividaListSerializer(DividaSerializer):
     banco = BancoSerializer(read_only=True)
     alinea = AlineaSerializer(read_only=True)
     tipoCobranca = TipoCobrancaSerializer(read_only=True)
+
+    alterado_por = serializers.CharField(
+        read_only=True,
+    )
 
 
 class TelefoneImportacaoSerializer(serializers.ModelSerializer):

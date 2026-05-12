@@ -84,6 +84,14 @@ class Responsavel(models.Model):
     telefones = models.CharField(max_length=255, null=True, blank=True)
     entidade = models.ForeignKey(Entidade, on_delete=models.PROTECT, related_name="responsaveis")
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["entidade", "cpf"],
+                name="unique_entidade_cpf",
+            )
+        ]
+
     def __str__(self):
         return f"{self.nome}"
 
@@ -256,6 +264,16 @@ class Divida(models.Model):
     obsJw = models.TextField(null=True, blank=True)
     statusCancelado = models.BooleanField(null=True, blank=True)
     acordo = models.ForeignKey(Acordo, null=True, blank=True, on_delete=models.PROTECT, related_name="dividas")
+    alterado_por = models.ForeignKey(Usuario, blank=True, null=True ,on_delete=models.PROTECT, related_name="dividas")
+    alterado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["entidade", "numeroCobranca"],
+                name="unique_entidade_numeroCobranca",
+            )
+        ]
 
     def __str__(self):
         return f"{self.numeroCobranca}"
