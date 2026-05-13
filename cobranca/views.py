@@ -521,6 +521,7 @@ class ValidarResponsaveis(APIView):
                         "uf": item.uf,
                         "cep": item.cep,
                         "rg": item.rg,
+                        "email": item.email,
                     }
                 )
 

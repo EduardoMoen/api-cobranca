@@ -81,6 +81,7 @@ class Responsavel(models.Model):
     rg = models.CharField(max_length=255, null=True, blank=True)
     rg_emissao = models.CharField(max_length=20, null=True, blank=True)
     estado_civil = models.CharField(max_length=255, null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
     telefones = models.CharField(max_length=255, null=True, blank=True)
     entidade = models.ForeignKey(Entidade, on_delete=models.PROTECT, related_name="responsaveis")
 
