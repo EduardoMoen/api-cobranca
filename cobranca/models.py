@@ -187,7 +187,7 @@ class Divida(models.Model):
     entidade = models.ForeignKey(Entidade, on_delete=models.PROTECT, related_name="dividas")
     responsavel = models.ForeignKey(Responsavel, on_delete=models.PROTECT, related_name="dividas")
     tipoCobranca = models.ForeignKey(TipoCobranca, on_delete=models.PROTECT, related_name="dividas")
-    codigoCobranca = models.IntegerField(null=True, blank=True)
+    codigoCobranca = models.IntegerField(unique=True, db_index=True)
     numeroCobranca = models.CharField(max_length=20)
     dataPrimeiraImportacao = models.DateField(null=True, blank=True)
     dataUltimaImportacao = models.DateField(null=True, blank=True)

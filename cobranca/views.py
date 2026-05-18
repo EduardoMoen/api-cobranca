@@ -540,19 +540,110 @@ class ValidarResponsaveis(APIView):
         })
 
 
+# class ValidarBoletos(APIView):
+#     def post(self, request):
+#
+#         importados = BoletoImportacao.objects.all()
+#
+#         criados = 0
+#         atualizados = 0
+#         erros = 0
+#
+#         tipoCobranca = TipoCobranca.objects.get(id=1)
+#
+#         entidades = {e.codigo: e for e in Entidade.objects.all()}
+#         responsaveis = {r.cpf: r for r in Responsavel.objects.all()}
+#
+#         for item in importados:
+#
+#             if not item.numero_carne:
+#                 continue
+#
+#             try:
+#                 entidade_codigo = item.responsavel.codigo_escola[:6]
+#
+#                 entidade = entidades.get(entidade_codigo)
+#                 if not entidade:
+#                     raise Exception(f"Entidade não encontrada: {entidade}")
+#
+#                 responsavel = responsaveis.get(item.responsavel.cpf)
+#
+#                 obj, created = Divida.objects.update_or_create(
+#                     codigoCobranca=item.codigo_carne,
+#                     defaults={
+#                         "numeroCobranca": item.numero_carne,
+#                         "responsavel": responsavel,
+#                         "tipoCobranca": tipoCobranca,
+#                         "dataVencimento": item.data_vencimento,
+#                         "valorCobranca": item.valor,
+#                         "valorMulta": item.multa,
+#                         "codigoAluno": item.codigo_aluno,
+#                         "percentualMulta": item.percentual_multa,
+#                         "percentualJuros": item.percentual_juro,
+#                         "serie": item.serie_turma,
+#                         "nomeAluno": item.aluno_nome,
+#                         "entidade": entidade,
+#                         "escola": item.escola,
+#                     }
+#                 )
+#
+#                 if created:
+#                     criados += 1
+#                 else:
+#                     atualizados += 1
+#
+#             except Exception as e:
+#                 erros += 1
+#                 print(f"Erro no Codigo {item.codigo_carne}: {e}")
+#
+#         return Response({
+#             "criados": criados,
+#             "atualizados": atualizados,
+#             "erros": erros
+#         })
+
+
 class ValidarBoletos(APIView):
+
+    @transaction.atomic
     def post(self, request):
 
-        importados = BoletoImportacao.objects.all()
+        importados = (
+            BoletoImportacao.objects
+            .select_related("responsavel")
+            .all()
+        )
 
-        criados = 0
-        atualizados = 0
+        tipo_cobranca = TipoCobranca.objects.get(id=1)
+
+        entidades = {
+            e.codigo: e
+            for e in Entidade.objects.all()
+        }
+
+        responsaveis = {
+            r.cpf: r
+            for r in Responsavel.objects.all()
+        }
+
+        # Busca todas as dívidas existentes de uma vez
+        codigos = [
+            item.codigo_carne
+            for item in importados
+            if item.numero_carne
+        ]
+
+        dividas_existentes = {
+            d.codigoCobranca: d
+            for d in Divida.objects.filter(
+                codigoCobranca__in=codigos
+            )
+        }
+
+        criar = []
+        atualizar = []
+
         erros = 0
-
-        tipoCobranca = TipoCobranca.objects.get(id=1)
-
-        entidades = {e.codigo: e for e in Entidade.objects.all()}
-        responsaveis = {r.cpf: r for r in Responsavel.objects.all()}
 
         for item in importados:
 
@@ -563,44 +654,91 @@ class ValidarBoletos(APIView):
                 entidade_codigo = item.responsavel.codigo_escola[:6]
 
                 entidade = entidades.get(entidade_codigo)
+
                 if not entidade:
-                    raise Exception(f"Entidade não encontrada: {entidade}")
+                    raise Exception(
+                        f"Entidade não encontrada: {entidade_codigo}"
+                    )
 
-                responsavel = responsaveis.get(item.responsavel.cpf)
-
-                obj, created = Divida.objects.update_or_create(
-                    codigoCobranca=item.codigo_carne,
-                    defaults={
-                        "numeroCobranca": item.numero_carne,
-                        "responsavel": responsavel,
-                        "tipoCobranca": tipoCobranca,
-                        "dataVencimento": item.data_vencimento,
-                        "valorCobranca": item.valor,
-                        "valorMulta": item.multa,
-                        "codigoAluno": item.codigo_aluno,
-                        "percentualMulta": item.percentual_multa,
-                        "percentualJuros": item.percentual_juro,
-                        "serie": item.serie_turma,
-                        "nomeAluno": item.aluno_nome,
-                        "entidade": entidade,
-                        "escola": item.escola,
-                    }
+                responsavel = responsaveis.get(
+                    item.responsavel.cpf
                 )
 
-                if created:
-                    criados += 1
+                dados = {
+                    "numeroCobranca": item.numero_carne,
+                    "responsavel": responsavel,
+                    "tipoCobranca": tipo_cobranca,
+                    "dataVencimento": item.data_vencimento,
+                    "valorCobranca": item.valor,
+                    "valorMulta": item.multa,
+                    "codigoAluno": item.codigo_aluno,
+                    "percentualMulta": item.percentual_multa,
+                    "percentualJuros": item.percentual_juro,
+                    "serie": item.serie_turma,
+                    "nomeAluno": item.aluno_nome,
+                    "entidade": entidade,
+                    "escola": item.escola,
+                }
+
+                divida_existente = dividas_existentes.get(
+                    item.codigo_carne
+                )
+
+                if divida_existente:
+
+                    for campo, valor in dados.items():
+                        setattr(divida_existente, campo, valor)
+
+                    atualizar.append(divida_existente)
+
                 else:
-                    atualizados += 1
+
+                    criar.append(
+                        Divida(
+                            codigoCobranca=item.codigo_carne,
+                            **dados
+                        )
+                    )
 
             except Exception as e:
                 erros += 1
-                print(f"Erro no Codigo {item.codigo_carne}: {e}")
+                print(
+                    f"Erro no Codigo {item.codigo_carne}: {e}"
+                )
+
+        # INSERT em lote
+        Divida.objects.bulk_create(
+            criar,
+            batch_size=1000
+        )
+
+        # UPDATE em lote
+        Divida.objects.bulk_update(
+            atualizar,
+            fields=[
+                "numeroCobranca",
+                "responsavel",
+                "tipoCobranca",
+                "dataVencimento",
+                "valorCobranca",
+                "valorMulta",
+                "codigoAluno",
+                "percentualMulta",
+                "percentualJuros",
+                "serie",
+                "nomeAluno",
+                "entidade",
+                "escola",
+            ],
+            batch_size=1000
+        )
 
         return Response({
-            "criados": criados,
-            "atualizados": atualizados,
+            "criados": len(criar),
+            "atualizados": len(atualizar),
             "erros": erros
         })
+
 
 class ImportCsvView(APIView):
     parser_classes = [MultiPartParser, FormParser]
