@@ -605,7 +605,6 @@ class ValidarResponsaveis(APIView):
 
 class ValidarBoletos(APIView):
 
-    @transaction.atomic
     def post(self, request):
 
         importados = (
@@ -613,6 +612,10 @@ class ValidarBoletos(APIView):
             .select_related("responsavel")
             .all()
         )
+
+        criados = 0
+        atualizados = 0
+        erros = 0
 
         tipo_cobranca = TipoCobranca.objects.get(id=1)
 
@@ -626,24 +629,11 @@ class ValidarBoletos(APIView):
             for r in Responsavel.objects.all()
         }
 
-        # Busca todas as dívidas existentes de uma vez
-        codigos = [
-            item.codigo_carne
-            for item in importados
-            if item.numero_carne
-        ]
-
-        dividas_existentes = {
+        # carrega tudo uma vez
+        dividas = {
             d.codigoCobranca: d
-            for d in Divida.objects.filter(
-                codigoCobranca__in=codigos
-            )
+            for d in Divida.objects.all()
         }
-
-        criar = []
-        atualizar = []
-
-        erros = 0
 
         for item in importados:
 
@@ -651,7 +641,10 @@ class ValidarBoletos(APIView):
                 continue
 
             try:
-                entidade_codigo = item.responsavel.codigo_escola[:6]
+
+                entidade_codigo = (
+                    item.responsavel.codigo_escola[:6]
+                )
 
                 entidade = entidades.get(entidade_codigo)
 
@@ -664,41 +657,50 @@ class ValidarBoletos(APIView):
                     item.responsavel.cpf
                 )
 
-                dados = {
-                    "numeroCobranca": item.numero_carne,
-                    "responsavel": responsavel,
-                    "tipoCobranca": tipo_cobranca,
-                    "dataVencimento": item.data_vencimento,
-                    "valorCobranca": item.valor,
-                    "valorMulta": item.multa,
-                    "codigoAluno": item.codigo_aluno,
-                    "percentualMulta": item.percentual_multa,
-                    "percentualJuros": item.percentual_juro,
-                    "serie": item.serie_turma,
-                    "nomeAluno": item.aluno_nome,
-                    "entidade": entidade,
-                    "escola": item.escola,
-                }
+                divida = dividas.get(item.codigo_carne)
 
-                divida_existente = dividas_existentes.get(
-                    item.codigo_carne
-                )
+                if divida:
 
-                if divida_existente:
+                    divida.numeroCobranca = item.numero_carne
+                    divida.responsavel = responsavel
+                    divida.tipoCobranca = tipo_cobranca
+                    divida.dataVencimento = item.data_vencimento
+                    divida.valorCobranca = item.valor
+                    divida.valorMulta = item.multa
+                    divida.codigoAluno = item.codigo_aluno
+                    divida.percentualMulta = item.percentual_multa
+                    divida.percentualJuros = item.percentual_juro
+                    divida.serie = item.serie_turma
+                    divida.nomeAluno = item.aluno_nome
+                    divida.entidade = entidade
+                    divida.escola = item.escola
 
-                    for campo, valor in dados.items():
-                        setattr(divida_existente, campo, valor)
+                    divida.save()
 
-                    atualizar.append(divida_existente)
+                    atualizados += 1
 
                 else:
 
-                    criar.append(
-                        Divida(
-                            codigoCobranca=item.codigo_carne,
-                            **dados
-                        )
+                    nova = Divida.objects.create(
+                        codigoCobranca=item.codigo_carne,
+                        numeroCobranca=item.numero_carne,
+                        responsavel=responsavel,
+                        tipoCobranca=tipo_cobranca,
+                        dataVencimento=item.data_vencimento,
+                        valorCobranca=item.valor,
+                        valorMulta=item.multa,
+                        codigoAluno=item.codigo_aluno,
+                        percentualMulta=item.percentual_multa,
+                        percentualJuros=item.percentual_juro,
+                        serie=item.serie_turma,
+                        nomeAluno=item.aluno_nome,
+                        entidade=entidade,
+                        escola=item.escola,
                     )
+
+                    dividas[item.codigo_carne] = nova
+
+                    criados += 1
 
             except Exception as e:
                 erros += 1
@@ -706,36 +708,9 @@ class ValidarBoletos(APIView):
                     f"Erro no Codigo {item.codigo_carne}: {e}"
                 )
 
-        # INSERT em lote
-        Divida.objects.bulk_create(
-            criar,
-            batch_size=1000
-        )
-
-        # UPDATE em lote
-        Divida.objects.bulk_update(
-            atualizar,
-            fields=[
-                "numeroCobranca",
-                "responsavel",
-                "tipoCobranca",
-                "dataVencimento",
-                "valorCobranca",
-                "valorMulta",
-                "codigoAluno",
-                "percentualMulta",
-                "percentualJuros",
-                "serie",
-                "nomeAluno",
-                "entidade",
-                "escola",
-            ],
-            batch_size=1000
-        )
-
         return Response({
-            "criados": len(criar),
-            "atualizados": len(atualizar),
+            "criados": criados,
+            "atualizados": atualizados,
             "erros": erros
         })
 
