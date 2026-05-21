@@ -47,6 +47,7 @@ from cobranca.models import (
 )
 from .pdf.carta import gerar_carta_pdf
 from .pdf.carta_por_entidade import carta_por_entidade
+from .pdf.carta_word import gerar_carta_word
 from .pdf.extrato import gerar_extrato_pdf
 from cobranca.serializers import (
     TipoCobrancaSerializer,
@@ -463,6 +464,23 @@ def carta_view(request, responsavel_id):
 
     response = HttpResponse(pdf_buffer, content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="carta.pdf"'
+
+    return response
+
+def carta_word_view(request, responsavel_id):
+    responsavel = get_object_or_404(Responsavel, id=responsavel_id)
+    dividas = responsavel.dividas.all().order_by("nomeAluno")
+
+    word_buffer = gerar_carta_word(responsavel, dividas)
+
+    response = HttpResponse(
+        word_buffer,
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="carta.docx"'
+    )
 
     return response
 
