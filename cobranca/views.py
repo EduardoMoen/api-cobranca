@@ -48,6 +48,7 @@ from cobranca.models import (
 from .pdf.carta import gerar_carta_pdf
 from .pdf.carta_por_entidade import carta_por_entidade
 from .pdf.carta_word import gerar_carta_word
+from .pdf.cartas_entidade_word import gerar_carta_entidade_word
 from .pdf.extrato import gerar_extrato_pdf
 from cobranca.serializers import (
     TipoCobrancaSerializer,
@@ -493,6 +494,40 @@ def carta_por_entidade_view(request, entidade_id):
 
     response = HttpResponse(pdf_buffer, content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="Carta_entidade.pdf"'
+
+    return response
+
+def carta_por_entidade_word_view(request, entidade_id):
+    entidade = get_object_or_404(Entidade, id=entidade_id)
+    dividas = entidade.dividas.all().order_by("responsavel")
+
+    word_buffer = gerar_carta_entidade_word(dividas)
+
+    response = HttpResponse(
+        word_buffer,
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="carta.docx"'
+    )
+
+    return response
+
+def carta_por_escola_word_view(request, escola_id):
+    escola = get_object_or_404(Escola, id=escola_id)
+    dividas = escola.dividas.all().order_by("responsavel")
+
+    word_buffer = gerar_carta_entidade_word(dividas)
+
+    response = HttpResponse(
+        word_buffer,
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="carta.docx"'
+    )
 
     return response
 

@@ -26,7 +26,7 @@ from cobranca.views import (
     ValidarBoletos,
     ImportCsvView,
     carta_por_entidade_view,
-    carta_por_escola_view, carta_word_view,
+    carta_por_escola_view, carta_word_view, carta_por_escola_word_view, carta_por_entidade_word_view,
 )
 
 app_name = "cobranca"
@@ -58,7 +58,9 @@ urlpatterns = router.urls + [
     path("dividas/<uuid:responsavel_id>/carta/", carta_view, name="carta"),
     path("dividas/<uuid:responsavel_id>/carta-word/", carta_word_view, name="carta-word"),
     path("dividas/<uuid:escola_id>/carta-escola/", carta_por_escola_view, name="carta-por-escola"),
+    path("dividas/<uuid:escola_id>/carta-escola-word/", carta_por_escola_word_view, name="carta-escola-word"),
     path("dividas/<uuid:entidade_id>/carta-entidade/", carta_por_entidade_view, name="carta-por-entidade"),
+    path("dividas/<uuid:entidade_id>/carta-entidade-word/", carta_por_entidade_word_view, name="carta-entidade-word"),
     path("validar-responsaveis/", ValidarResponsaveis.as_view(), name="validar-responsaveis"),
     path("validar-boletos/", ValidarBoletos.as_view(), name="validar-boletos"),
     path("importar-csv/", ImportCsvView.as_view(), name="importar-csv"),
