@@ -295,11 +295,15 @@ class DividaViewSet(ModelViewSet):
 
         return valor
 
-    @action(detail=True, methods=["post"])
-    def calculado(self, request, pk=None):
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path=r"calculado/(?P<honorarios>\d+)"
+    )
+    def calculado(self, request, pk=None, honorarios=None):
         valor_multa = Decimal(2)
         valor_juros = Decimal(1)
-        valor_honorarios = Decimal(10)
+        valor_honorarios = Decimal(honorarios)
 
         dividas = Divida.objects.filter(responsavel_id=pk)
 
