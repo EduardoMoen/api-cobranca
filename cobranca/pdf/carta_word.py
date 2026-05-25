@@ -41,11 +41,15 @@ def gerar_carta_word(responsavel, dividas):
 
 
     texto2 = dedent("""
-    Tendo esgotado o prazo para pagamento no Banco Credenciado, V.Sa. deverá, dentro do prazo de 5 (cinco) dias, entrar em contato com o Escritório Jurídico, à Rua Barbosa da Cunha, 386 – Guanabara, Campinas/SP.
+    Tendo esgotado o prazo para pagamento no Banco Credenciado, V.Sa. deverá, dentro do prazo máximo de 5 (cinco) dias, entrar em contato com o Escritório Jurídico, que estará atendendo de segunda à sexta-feira das 9:00 às 12:00 h e das 13:00 às 17:00 h, pelo Telefone/WhatsApp (19) 3232-5767.
     """)
 
     texto3 = dedent("""
-    Caso V. Sa. já tenha pago a(s) mensalidade(s) em questão, queira por gentileza, desconsiderar esta comunicação.
+    Esgotando este prazo, e no seu silêncio, serão tomadas providências cabíveis junto aos serviços de proteção ao crédito, e, posteriormente a propositura de ação judicial.
+    """)
+
+    texto4 = dedent("""
+    Caso V. Sa. já tenha pago o seu débito, queira por gentileza, nos enviar comprovação do pagamento e desconsiderar esta comunicação.
     """)
 
     dividas_por_aluno = defaultdict(list)
@@ -63,9 +67,10 @@ def gerar_carta_word(responsavel, dividas):
         numero_aluno = lista_dividas[0].codigoAluno
         nome_escola = lista_dividas[0].escola.nome
         ano = lista_dividas[0].dataVencimento.year
+        mes = lista_dividas[0].dataVencimento.month
 
         texto1 = dedent(f"""
-            Pela presente comunicamos V.Sa. que, encontra-se em aberto o pagamento da(s) mensalidade(s) de seu filho(a) matriculado(a) no(a) {nome_escola} no ano de 2020, referente(s) aos boleto(s) vencido(s):
+            Pela presente comunicamos V.Sa. que, encontra-se em aberto o pagamento da(s) mensalidade(s) de seu filho(a) matriculado(a) no(a) {nome_escola} referente(s) aos boleto(s) vencido(s) em:
             """)
 
         # LOGO
@@ -79,7 +84,7 @@ def gerar_carta_word(responsavel, dividas):
 
         # DATA
         p = document.add_paragraph()
-        p.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
+        p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
         p.add_run(
             f"Campinas, {datetime.date.today().strftime('%d/%m/%Y')}."
         )
@@ -104,8 +109,8 @@ def gerar_carta_word(responsavel, dividas):
         p = document.add_paragraph(texto1)
         p.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
 
-        boletos = "; ".join(
-            [f"{divida.numeroCobranca}-{ano}" for divida in lista_dividas]
+        boletos = "  ; ".join(
+            [f"{divida.numeroCobranca}-{mes}-{ano}" for divida in lista_dividas]
         )
 
         document.add_paragraph(boletos)
@@ -116,11 +121,12 @@ def gerar_carta_word(responsavel, dividas):
         p = document.add_paragraph(texto3)
         p.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
 
-        document.add_paragraph()
+        p = document.add_paragraph(texto4)
+        p.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+
         document.add_paragraph()
         document.add_paragraph("Atenciosamente,")
 
-        document.add_paragraph()
         document.add_paragraph()
         document.add_paragraph("Cremovale Cobranças e Serviços Ltda")
 
