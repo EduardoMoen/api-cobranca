@@ -38,9 +38,7 @@ def gerar_carta_word(responsavel, dividas):
     run.font.size = Pt(9)
 
     # TEXTOS
-    texto1 = dedent("""
-    Pela presente comunicamos V.Sa. que, encontra-se em aberto o pagamento da(s) mensalidade(s) de seu filho(a) matriculado(a) no(a) Unasp EC no ano de 2020, referente(s) aos boleto(s) vencido(s):
-    """)
+
 
     texto2 = dedent("""
     Tendo esgotado o prazo para pagamento no Banco Credenciado, V.Sa. deverá, dentro do prazo de 5 (cinco) dias, entrar em contato com o Escritório Jurídico, à Rua Barbosa da Cunha, 386 – Guanabara, Campinas/SP.
@@ -63,6 +61,12 @@ def gerar_carta_word(responsavel, dividas):
         contador += 1
 
         numero_aluno = lista_dividas[0].codigoAluno
+        nome_escola = lista_dividas[0].escola.nome
+        ano = lista_dividas[0].dataVencimento.year
+
+        texto1 = dedent(f"""
+            Pela presente comunicamos V.Sa. que, encontra-se em aberto o pagamento da(s) mensalidade(s) de seu filho(a) matriculado(a) no(a) {nome_escola} no ano de 2020, referente(s) aos boleto(s) vencido(s):
+            """)
 
         # LOGO
         try:
@@ -92,7 +96,7 @@ def gerar_carta_word(responsavel, dividas):
             f"{responsavel.endereco} - {responsavel.bairro}\n"
         )
         p.add_run(
-            f"{responsavel.cep} {responsavel.cidade} - {responsavel.uf}"
+            f"{responsavel.cep.strip()} {responsavel.cidade} - {responsavel.uf}"
         )
 
         document.add_paragraph()
@@ -100,8 +104,8 @@ def gerar_carta_word(responsavel, dividas):
         p = document.add_paragraph(texto1)
         p.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
 
-        boletos = ", ".join(
-            [divida.numeroCobranca for divida in lista_dividas]
+        boletos = "; ".join(
+            [f"{divida.numeroCobranca}-{ano}" for divida in lista_dividas]
         )
 
         document.add_paragraph(boletos)

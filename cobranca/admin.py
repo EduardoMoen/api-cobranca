@@ -51,6 +51,7 @@ class EscolaAdmin(admin.ModelAdmin):
 @admin.register(Divida)
 class DividaAdmin(admin.ModelAdmin):
     list_display = ("id", "numeroCobranca", "entidade")
+    list_filter = ["entidade"]
 
 
 @admin.register(ResponsavelImportacao)
@@ -60,6 +61,7 @@ class ResponsavelImportacaoAdmin(admin.ModelAdmin):
 @admin.register(BoletoImportacao)
 class BoletoImportacaoAdmin(admin.ModelAdmin):
     list_display = ["codigo_carne", "valor", "responsavel"]
+    list_filter = ["responsavel"]
 
 @admin.register(TelefoneImportacao)
 class TelefoneImportacaoAdmin(admin.ModelAdmin):

@@ -1,5 +1,6 @@
 import datetime
 import csv
+import io
 import re
 
 from decimal import Decimal
@@ -772,177 +773,260 @@ class ValidarBoletos(APIView):
         })
 
 
+CPF_REGEX = re.compile(r"/D")
+
+IDX_ESCOLA = 1
+IDX_CPF = 2
+IDX_NOME = 3
+IDX_RG = 4
+IDX_ENDERECO = 5
+IDX_NUMERO_CASA = 6
+IDX_BAIRRO = 8
+IDX_CIDADE = 9
+IDX_UF = 10
+IDX_CEP = 11
+IDX_TELEFONES = 12
+IDX_NUMERO_COBRANCA = 15
+IDX_DATA_VENCIMENTO = 16
+IDX_VALOR = 17
+IDX_CODIGO_ALUNO = 18
+IDX_NOME_ALUNO = 19
+IDX_SERIE = 20
+
+
+def limpar_cpf(value):
+    return CPF_REGEX.sub("", value or "")
+
+def formatar_data(data_str):
+    if not data_str:
+        return None
+
+    return datetime.datetime.strptime(
+        data_str,
+        "%d/%m/%Y"
+    ).date()
+
+def formatar_valor(valor):
+    if not valor:
+        return None
+
+    valor = valor.replace(".", "").replace(",", ".")
+    return Decimal(valor)
+
+
+def formata_serie(turma_string):
+    if not turma_string:
+        return ""
+
+    turma_string = turma_string.lower()
+
+    return (
+        turma_string
+        .replace("turma:", "")
+        .strip()[:20]
+    )
+
+
 class ImportCsvView(APIView):
     parser_classes = [MultiPartParser, FormParser]
+
     def post(self, request):
+
         file = request.FILES.get("file")
 
         if not file:
-            return Response({"error": "Arquivo não enviado"}, status=400)
+            return Response(
+                {"error": "Arquivo não enviado"},
+                status=400,
+            )
 
-        decoded_file = file.read().decode("utf-8").splitlines()
-        reader = csv.reader(decoded_file, delimiter=';')
+        decoded = io.TextIOWrapper(
+            file.file,
+            encoding="utf-8"
+        )
+
+        reader = csv.reader(decoded, delimiter=";")
+
         next(reader, None)
+
+        erros = []
+
+        responsaveis_sucesso = 0
+        dividas_sucesso = 0
 
         novos_responsaveis = {}
         novas_dividas = []
-        erros = []
-        responsaveis_sucesso = 0
-        dividas_sucesso = 0
 
         entidade = Entidade.objects.get(codigo="123456") # Codigo do Grupo Objetivo
 
         escolas_cache = {
-            e.codigo: e for e in Escola.objects.filter(entidade=entidade)
+            e.codigo: e
+            for e in Escola.objects.filter(entidade=entidade)
         }
 
         rows = list(reader)
 
-        for i, row in enumerate(rows, start=1):
-
-            data = {
-                "nome": row[3],
-                "cpf": row[2],
-                "rg": row[4],
-                "endereco": row[5],
-                "complemento": row[6],
-                "bairro": row[8],
-                "cidade": row[9],
-                "uf": row[10],
-                "cep": row[11],
-                "telefones": row[12],
-                "entidade": entidade.id,
-            }
-
-            serializer = ResponsavelSerializer(data=data)
-
-            if serializer.is_valid():
-                obj = Responsavel(
-                    nome=serializer.validated_data["nome"],
-                    cpf=serializer.validated_data["cpf"],
-                    rg=serializer.validated_data["rg"],
-                    endereco=serializer.validated_data["endereco"],
-                    complemento=serializer.validated_data["complemento"],
-                    bairro=serializer.validated_data["bairro"],
-                    cidade=serializer.validated_data["cidade"],
-                    uf=serializer.validated_data["uf"],
-                    cep=serializer.validated_data["cep"],
-                    telefones=serializer.validated_data["telefones"],
-                    entidade=entidade,
-                )
-                key = (entidade.id, serializer.validated_data["cpf"])
-                novos_responsaveis[key] = obj
-                # novos_responsaveis.append(obj)
-                responsaveis_sucesso += 1
-            else:
-                erros.append({
-                    "linha": i,
-                    "erro": serializer.errors,
-                    "dados": {
-                        **data,
-                        "entidade": entidade.id
-                    }
-                })
-
-        Responsavel.objects.bulk_create(
-            list(novos_responsaveis.values()),
-            update_conflicts=True,
-            unique_fields=["entidade", "cpf"],
-            update_fields=[
-                "nome",
-                "rg",
-                "endereco",
-                "complemento",
-                "bairro",
-                "cidade",
-                "uf",
-                "cep",
-                "telefones",
-            ]
-        )
-
-        responsaveis_cache = {
-            r.cpf: r for r in Responsavel.objects.all()
+        cpfs = {
+            limpar_cpf(row[IDX_CPF])
+            for row in rows
+            if row[IDX_CPF]
         }
 
-        def limpar_cpf(value):
-            return re.sub(r'\D', '', value)
+        responsaveis_cache = {
+            r.cpf: r
+            for r in Responsavel.objects.filter(
+                entidade=entidade,
+                cpf__in=cpfs
+            )
+        }
 
-        def formatar_data(data_str):
-            return datetime.datetime.strptime(data_str, "%d/%m/%Y").date()
+        with transaction.atomic():
 
-        def formatar_valor(valor):
-            if not valor:
-                return None
-            return valor.replace(".", "").replace(",", ".")
+            for i, row in enumerate(rows, start=1):
 
-        def formata_serie(turma_string):
-            turma_string = turma_string.lower()
+                try:
 
-            return turma_string.replace("turma:", "").strip()[:20]
+                    cpf = limpar_cpf(row[IDX_CPF])
 
-        for i, row in enumerate(rows, start=1):
-            responsavel = responsaveis_cache.get(limpar_cpf(row[2]))
-            escola = escolas_cache.get(row[1])
+                    if not cpf:
+                        raise ValueError("CPF vazio")
 
-            data = {
-                "entidade": entidade.id,
-                "responsavel": responsavel.id,
-                "responsavelAtual": responsavel.id,
-                "tipoCobranca": 1,
-                "numeroCobranca": row[15],
-                "dataVencimento": formatar_data(row[16]),
-                "valorCobranca": formatar_valor(row[17]),
-                "escola": escola.id,
-                "nomeAluno": row[19],
-                "codigoAluno": row[18],
-                "serie": formata_serie(row[20]),
+                    obj = Responsavel(
+                        nome=row[IDX_NOME],
+                        cpf=row[IDX_CPF],
+                        rg=row[IDX_RG],
+                        endereco=row[IDX_ENDERECO],
+                        complemento=row[IDX_NUMERO_CASA],
+                        bairro=row[IDX_BAIRRO],
+                        cidade=row[IDX_CIDADE],
+                        uf=row[IDX_UF],
+                        cep=row[IDX_CEP],
+                        telefones=row[IDX_TELEFONES],
+                        entidade=entidade,
+                    )
+
+                    key = (entidade.id, cpf)
+
+                    novos_responsaveis[key] = obj
+
+                    responsaveis_sucesso += 1
+
+                except Exception as e:
+
+                    erros.append({
+                        "linha": i,
+                        "erro": str(e),
+                    })
+
+            Responsavel.objects.bulk_create(
+                novos_responsaveis.values(),
+                update_conflicts=True,
+                unique_fields=["entidade", "cpf"],
+                update_fields=[
+                    "nome",
+                    "rg",
+                    "endereco",
+                    "complemento",
+                    "bairro",
+                    "cidade",
+                    "uf",
+                    "cep",
+                    "telefones",
+                ],
+                batch_size=1000
+            )
+
+            responsaveis_cache = {
+                r.cpf: r
+                for r in Responsavel.objects.filter(
+                    entidade=entidade,
+                    cpf__in=cpfs
+                )
             }
 
-            serializer = DividaSerializer(data=data)
 
-            if serializer.is_valid():
-                obj = Divida(
-                    entidade=entidade,
-                    responsavel=responsavel,
-                    responsavelAtual=responsavel,
-                    tipoCobranca=serializer.validated_data["tipoCobranca"],
-                    numeroCobranca=serializer.validated_data["numeroCobranca"],
-                    dataVencimento=serializer.validated_data["dataVencimento"],
-                    valorCobranca=serializer.validated_data["valorCobranca"],
-                    escola=escola,
-                    nomeAluno=serializer.validated_data["nomeAluno"],
-                    codigoAluno=serializer.validated_data["codigoAluno"],
-                    serie=serializer.validated_data["serie"],
-                )
-                novas_dividas.append(obj)
-                dividas_sucesso += 1
-            else:
-                erros.append({
-                    "linha": i,
-                    "erro": serializer.errors,
-                    "dados": {
-                        **data,
-                        "entidade": entidade.id
-                    }
-                })
 
-        Divida.objects.bulk_create(
-            novas_dividas,
-            update_conflicts=True,
-            unique_fields=["numeroCobranca", "entidade"],
-            update_fields=[
-                "responsavel",
-                "responsavelAtual",
-                "tipoCobranca",
-                "dataVencimento",
-                "valorCobranca",
-                "escola",
-                "nomeAluno",
-                "codigoAluno",
-                "serie",
-            ],
-        )
+            for i, row in enumerate(rows, start=1):
+
+                try:
+
+                    cpf = limpar_cpf(row[IDX_CPF])
+
+                    responsavel = responsaveis_cache.get(cpf)
+
+                    if not responsavel:
+                        raise ValueError(
+                            f"Responsável não encontrado: {cpf}"
+                        )
+
+                    escola = escolas_cache.get(
+                        row[IDX_ESCOLA]
+                    )
+
+                    if not escola:
+                        raise ValueError(
+                            f"Escola não encontrada: {row[IDX_ESCOLA]}"
+                        )
+
+                    numero_cobranca = row[IDX_NUMERO_COBRANCA]
+
+                    if not numero_cobranca:
+                        raise ValueError(
+                            "Número da cobrança vazio"
+                        )
+
+
+                    obj = Divida(
+                        entidade=entidade,
+                        responsavel=responsavel,
+                        responsavelAtual=responsavel,
+                        tipoCobranca_id=1,
+                        numeroCobranca=numero_cobranca,
+                        dataVencimento=formatar_data(
+                            row[IDX_DATA_VENCIMENTO]
+                        ),
+                        valorCobranca=formatar_valor(
+                            row[IDX_VALOR]
+                        ),
+                        escola=escola,
+                        nomeAluno=row[IDX_NOME_ALUNO],
+                        codigoAluno=row[IDX_CODIGO_ALUNO],
+                        serie=formata_serie(
+                            row[IDX_SERIE]
+                        ),
+                    )
+
+                    novas_dividas.append(obj)
+
+                    dividas_sucesso += 1
+
+                except Exception as e:
+
+                    erros.append({
+                        "linha": i,
+                        "erro": str(e),
+                    })
+
+            Divida.objects.bulk_create(
+                novas_dividas,
+                update_conflicts=True,
+                unique_fields=[
+                    "numeroCobranca",
+                    "entidade",
+                ],
+                update_fields=[
+                    "responsavel",
+                    "responsavelAtual",
+                    "tipoCobranca",
+                    "dataVencimento",
+                    "valorCobranca",
+                    "escola",
+                    "nomeAluno",
+                    "codigoAluno",
+                    "serie",
+                ],
+                batch_size=1000
+            )
 
         return Response({
             "responsaveis-importados": responsaveis_sucesso,

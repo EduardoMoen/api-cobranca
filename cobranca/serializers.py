@@ -200,7 +200,9 @@ class DividaSerializer(serializers.ModelSerializer):
         queryset=TipoCobranca.objects.all()
     )
     alterado_por = NestedPrimaryKeyRelatedField(
-        queryset=Usuario.objects.all()
+        queryset=Usuario.objects.all(),
+        required=False,
+        allow_null=True,
     )
 
     class Meta:
