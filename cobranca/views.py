@@ -872,14 +872,6 @@ class ImportCsvView(APIView):
             if row[IDX_CPF]
         }
 
-        responsaveis_cache = {
-            r.cpf: r
-            for r in Responsavel.objects.filter(
-                entidade=entidade,
-                cpf__in=cpfs
-            )
-        }
-
         with transaction.atomic():
 
             for i, row in enumerate(rows, start=1):
@@ -984,7 +976,7 @@ class ImportCsvView(APIView):
                         numeroCobranca=numero_cobranca,
                         dataVencimento=formatar_data(
                             row[IDX_DATA_VENCIMENTO]
-                        ).strip(),
+                        ),
                         valorCobranca=formatar_valor(
                             row[IDX_VALOR]
                         ).strip(),
