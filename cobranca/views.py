@@ -960,7 +960,7 @@ class ImportCsvView(APIView):
                             f"Escola não encontrada: {row[IDX_ESCOLA]}"
                         )
 
-                    numero_cobranca = row[IDX_NUMERO_COBRANCA]
+                    numero_cobranca = row[IDX_NUMERO_COBRANCA].strip()
 
                     if not numero_cobranca:
                         raise ValueError(
@@ -979,7 +979,7 @@ class ImportCsvView(APIView):
                         ),
                         valorCobranca=formatar_valor(
                             row[IDX_VALOR]
-                        ).strip(),
+                        ),
                         escola=escola,
                         nomeAluno=row[IDX_NOME_ALUNO].strip(),
                         codigoAluno=row[IDX_CODIGO_ALUNO].strip(),
