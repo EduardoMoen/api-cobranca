@@ -37,6 +37,8 @@ class EscritorioAdmin(admin.ModelAdmin):
 @admin.register(Responsavel)
 class ResponsavelAdmin(admin.ModelAdmin):
     list_display = ("id", "nome", "entidade")
+    list_filter = ["entidade"]
+    search_fields = ["nome", "entidade"]
 
 @admin.register(Entidade)
 class EntidadeAdmin(admin.ModelAdmin):
@@ -52,6 +54,7 @@ class EscolaAdmin(admin.ModelAdmin):
 class DividaAdmin(admin.ModelAdmin):
     list_display = ("id", "numeroCobranca", "entidade")
     list_filter = ["entidade"]
+    search_fields = ["numeroCobranca", "entidade"]
 
 
 @admin.register(ResponsavelImportacao)
