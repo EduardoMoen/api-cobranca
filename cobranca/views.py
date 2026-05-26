@@ -892,16 +892,16 @@ class ImportCsvView(APIView):
                         raise ValueError("CPF vazio")
 
                     obj = Responsavel(
-                        nome=row[IDX_NOME],
-                        cpf=row[IDX_CPF],
-                        rg=row[IDX_RG],
-                        endereco=row[IDX_ENDERECO],
-                        complemento=row[IDX_NUMERO_CASA],
-                        bairro=row[IDX_BAIRRO],
-                        cidade=row[IDX_CIDADE],
-                        uf=row[IDX_UF],
-                        cep=row[IDX_CEP],
-                        telefones=row[IDX_TELEFONES],
+                        nome=row[IDX_NOME].strip(),
+                        cpf=limpar_cpf(row[IDX_CPF]).strip(),
+                        rg=row[IDX_RG].strip(),
+                        endereco=row[IDX_ENDERECO].strip(),
+                        complemento=row[IDX_NUMERO_CASA].strip(),
+                        bairro=row[IDX_BAIRRO].strip(),
+                        cidade=row[IDX_CIDADE].strip(),
+                        uf=row[IDX_UF].strip(),
+                        cep=row[IDX_CEP].strip(),
+                        telefones=row[IDX_TELEFONES].strip(),
                         entidade=entidade,
                     )
 
@@ -984,16 +984,16 @@ class ImportCsvView(APIView):
                         numeroCobranca=numero_cobranca,
                         dataVencimento=formatar_data(
                             row[IDX_DATA_VENCIMENTO]
-                        ),
+                        ).strip(),
                         valorCobranca=formatar_valor(
                             row[IDX_VALOR]
-                        ),
+                        ).strip(),
                         escola=escola,
-                        nomeAluno=row[IDX_NOME_ALUNO],
-                        codigoAluno=row[IDX_CODIGO_ALUNO],
+                        nomeAluno=row[IDX_NOME_ALUNO].strip(),
+                        codigoAluno=row[IDX_CODIGO_ALUNO].strip(),
                         serie=formata_serie(
                             row[IDX_SERIE]
-                        ),
+                        ).strip(),
                     )
 
                     novas_dividas.append(obj)
