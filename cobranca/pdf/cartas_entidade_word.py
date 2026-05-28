@@ -38,11 +38,11 @@ def gerar_carta_entidade_word(dividas):
     run.font.size = Pt(9)
 
     #TEXTOS
-    texto2 = dedent("""Tendo esgotado o prazo para pagamento no Banco Credenciado, V.Sa. deverá, dentro do prazo máximo de 5 (cinco) dias, entrar em contato com o Escritório Jurídico, que estará atendendo de segunda à sexta-feira das 9:00 às 12:00 h e das 13:00 às 17:00 h, pelo Telefone/WhatsApp (19) 3232-5767.""")
+    texto2 = dedent("""Tendo esgotado o prazo para pagamento no Banco Credenciado, V.Sa. deverá, dentro do prazo máximo de 5 (cinco) dias, entrar em contato com o Escritório Jurídico, que estará atendendo de segunda a sexta-feira das 9h às 12h e das 13h às 17h, pelo Telefone/WhatsApp (19) 3232-5767.""")
 
-    texto3 = dedent("""Esgotando este prazo, e no seu silêncio, serão tomadas providências cabíveis junto aos serviços de proteção ao crédito, e, posteriormente a propositura de ação judicial.""")
+    texto3 = dedent("""Esgotando este prazo, e no seu silêncio, serão tomadas providências cabíveis junto aos serviços de proteção ao crédito e, posteriormente, propositura de ação judicial.""")
 
-    texto4 = dedent("""Caso V. Sa. já tenha pago o seu débito, queira por gentileza, nos enviar comprovação do pagamento e desconsiderar esta comunicação.""")
+    texto4 = dedent("""Caso V. Sa. já tenha quitado o seu débito, queira, por gentileza, nos enviar comprovação do pagamento e desconsiderar esta comunicação.""")
 
     #AGRUPAR RESPONSAVEIS
     dividas_por_responsavel = defaultdict(list)
@@ -73,7 +73,7 @@ def gerar_carta_entidade_word(dividas):
             numero_aluno = lista_dividas[0].codigoAluno
             nome_escola = lista_dividas[0].escola.nome
 
-            texto1 = dedent(f"""Pela presente comunicamos V.Sa. que, encontra-se em aberto o pagamento da(s) mensalidade(s) de seu filho(a) matriculado(a) no(a) {nome_escola} referente(s) aos boleto(s) vencido(s) em:""")
+            texto1 = dedent(f"""Pela presente, comunicamos V.Sa. que encontra-se em aberto o pagamento da(s) mensalidade(s) de seu filho(a) matriculado(a) no(a) {nome_escola} referente(s) aos boleto(s) vencido(s) em:""")
 
             #LOGO
             try:
