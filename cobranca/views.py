@@ -44,7 +44,7 @@ from cobranca.models import (
     Lugar,
     Andamento,
     Acordo,
-    AcordoParcelas, Divida, ResponsavelImportacao, Indice, BoletoImportacao,
+    AcordoParcela, Divida, ResponsavelImportacao, Indice, BoletoImportacao,
 )
 from .pdf.carta import gerar_carta_pdf
 from .pdf.carta_por_entidade import carta_por_entidade
@@ -64,9 +64,9 @@ from cobranca.serializers import (
     AndamentoSerializer,
     AlineaSerializer,
     AcordoSerializer,
-    AcordoParcelasSerializer,
+    AcordoParcelaSerializer,
     BoletoSerializer, DividaSerializer, ResponsavelListSerializer, EscolaListSerializer, DividaListSerializer,
-    ResponsavelImportacaoSerializer, IndiceSerializer, ResponsavelApiSerializer,
+    ResponsavelImportacaoSerializer, IndiceSerializer, ResponsavelApiSerializer, AcordoCreateSerializer,
 )
 from cobranca.services import get_external_data, importar_responsaveis_com_boletos, get_responsaveis_api, enviar_email
 
@@ -228,9 +228,9 @@ class AcordoViewSet(ModelViewSet):
     serializer_class = AcordoSerializer
 
 
-class AcordoParcelasViewSet(ModelViewSet):
-    queryset = AcordoParcelas.objects.all()
-    serializer_class = AcordoParcelasSerializer
+class AcordoParcelaViewSet(ModelViewSet):
+    queryset = AcordoParcela.objects.all()
+    serializer_class = AcordoParcelaSerializer
 
 
 class IndiceViewSet(ModelViewSet):
@@ -1025,3 +1025,38 @@ class ImportCsvView(APIView):
             "dividas-importadas": dividas_sucesso,
             "erros": erros
         }, status=status.HTTP_200_OK)
+
+
+class CriarAcordo(APIView):
+    @transaction.atomic
+    def post(self, request):
+
+        serializer = AcordoCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        dados = serializer.validated_data
+
+        acordo = Acordo.objects.create(
+            responsavel=dados["responsavelId"],
+            data=dados["data"],
+            valor=dados["valorTotal"]
+        )
+
+        for parcela in dados["parcelas"]:
+            AcordoParcela.objects.create(
+                acordo=acordo,
+                vencimento=parcela["dataVencimento"],
+                valor=parcela["valor"],
+            )
+
+        Divida.objects.filter(
+            id__in=[d.id for d in dados["dividaIds"]]
+        ).update(acordo=acordo)
+
+        return Response(
+            {
+                "id": acordo.id,
+                "mensagem": "Acordo criado com sucesso"
+            },
+            status=201
+        )

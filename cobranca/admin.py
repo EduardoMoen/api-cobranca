@@ -16,7 +16,7 @@ from cobranca.models import (
     Andamento,
     PosicaoCheque,
     PosicaoContrato,
-    Banco
+    Banco, Acordo, AcordoParcela
 )
 
 
@@ -94,3 +94,11 @@ class PosicaoContratoAdmin(admin.ModelAdmin):
 @admin.register(Banco)
 class BancoAdmin(admin.ModelAdmin):
     list_display = ["id", "nome"]
+
+@admin.register(Acordo)
+class AcordoAdmin(admin.ModelAdmin):
+    list_display = ["responsavel", "data", "valor"]
+
+@admin.register(AcordoParcela)
+class AcordoParcelaAdmin(admin.ModelAdmin):
+    list_display = ["valor", "vencimento"]

@@ -13,7 +13,7 @@ from cobranca.models import (
     Andamento,
     Alinea,
     Acordo,
-    AcordoParcelas,
+    AcordoParcela,
     ResponsavelApi,
     BoletoApi,
     Divida,
@@ -126,16 +126,44 @@ class AlineaSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class AcordoParcelaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcordoParcela
+        fields = ["vencimento", "valor"]
+
+
 class AcordoSerializer(serializers.ModelSerializer):
+    parcelas = AcordoParcelaSerializer(
+        source="acordo_parcelas",
+        many=True,
+        read_only=True,
+    )
+    dividas = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+    )
+
     class Meta:
         model = Acordo
-        fields = "__all__"
+        fields = ["responsavel", "data", "valor", "parcelas", "dividas"]
 
 
-class AcordoParcelasSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AcordoParcelas
-        fields = "__all__"
+class AcordoParcelaCreateSerializer(serializers.Serializer):
+    dataVencimento = serializers.DateField()
+    valor = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
+class AcordoCreateSerializer(serializers.Serializer):
+    responsavelId = serializers.PrimaryKeyRelatedField(
+        queryset=Responsavel.objects.all()
+    )
+    data = serializers.DateField()
+    valorTotal = serializers.DecimalField(max_digits=12, decimal_places=2)
+    parcelas = AcordoParcelaCreateSerializer(many=True)
+    dividaIds = serializers.PrimaryKeyRelatedField(
+        queryset=Divida.objects.all(),
+        many=True,
+    )
 
 
 class BoletoSerializer(serializers.ModelSerializer):

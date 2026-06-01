@@ -142,7 +142,7 @@ class Acordo(models.Model):
         return f"{self.responsavel} {self.valor}"
 
 
-class AcordoParcelas(models.Model):
+class AcordoParcela(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     vencimento = models.DateField()
     valor = models.DecimalField(decimal_places=2, max_digits=10)

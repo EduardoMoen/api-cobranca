@@ -12,7 +12,7 @@ from cobranca.views import (
     AndamentoViewSet,
     AlineaViewSet,
     AcordoViewSet,
-    AcordoParcelasViewSet,
+    AcordoParcelaViewSet,
     IndiceViewSet,
     ImportBoletosView,
     EscolaViewSet,
@@ -26,7 +26,7 @@ from cobranca.views import (
     ValidarBoletos,
     ImportCsvView,
     carta_por_entidade_view,
-    carta_por_escola_view, carta_word_view, carta_por_escola_word_view, carta_por_entidade_word_view,
+    carta_por_escola_view, carta_word_view, carta_por_escola_word_view, carta_por_entidade_word_view, CriarAcordo,
 )
 
 app_name = "cobranca"
@@ -45,7 +45,7 @@ router.register("lugares", LugarViewSet, basename="lugares"),
 router.register("andamentos", AndamentoViewSet, basename="andamentos"),
 router.register("alineas", AlineaViewSet, basename="alineas"),
 router.register("acordos", AcordoViewSet, basename="acordos"),
-router.register("acordoparcelas", AcordoParcelasViewSet, basename="acordoparcelas"),
+router.register("acordoparcelas", AcordoParcelaViewSet, basename="acordoparcelas"),
 router.register("dividas", DividaViewSet, basename="dividas"),
 router.register("indices", IndiceViewSet, basename="indices"),
 
@@ -64,4 +64,5 @@ urlpatterns = router.urls + [
     path("validar-responsaveis/", ValidarResponsaveis.as_view(), name="validar-responsaveis"),
     path("validar-boletos/", ValidarBoletos.as_view(), name="validar-boletos"),
     path("importar-csv/", ImportCsvView.as_view(), name="importar-csv"),
+    path("criar-acordo/", CriarAcordo.as_view(), name="criar-acordo"),
 ]
