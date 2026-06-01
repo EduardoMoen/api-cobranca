@@ -146,7 +146,7 @@ class AcordoParcelas(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     vencimento = models.DateField()
     valor = models.DecimalField(decimal_places=2, max_digits=10)
-    data_pagamento = models.DateField()
+    data_pagamento = models.DateField(blank=True, null=True)
     acordo = models.ForeignKey(Acordo, on_delete=models.PROTECT, related_name="acordo_parcelas")
 
     def __str__(self):
