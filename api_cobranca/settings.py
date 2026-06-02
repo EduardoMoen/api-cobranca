@@ -38,22 +38,7 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = [
-    "https://jwcobranca2026.web.app",
-    "https://jw-cobranca.up.railway.app",
-    "http://localhost:4200",
-    "http://127.0.0.1:4200",
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://jwcobranca2026.web.app",
-    "https://jw-cobranca.up.railway.app",
-    "http://localhost:4200",
-    "http://127.0.0.1:4200",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
