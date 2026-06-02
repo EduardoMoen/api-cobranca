@@ -44,11 +44,15 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://jwcobranca2026.web.app",
     "https://jw-cobranca.up.railway.app",
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://jwcobranca2026.web.app",
     "https://jw-cobranca.up.railway.app",
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
 ]
 
 # Application definition
