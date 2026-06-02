@@ -788,10 +788,11 @@ IDX_CEP = 11
 IDX_TELEFONES = 12
 IDX_NUMERO_COBRANCA = 15
 IDX_DATA_VENCIMENTO = 16
-IDX_VALOR = 17
-IDX_CODIGO_ALUNO = 18
-IDX_NOME_ALUNO = 19
-IDX_SERIE = 20
+IDX_VALOR_ACAO = 17
+IDX_VALOR = 18
+IDX_CODIGO_ALUNO = 19
+IDX_NOME_ALUNO = 20
+IDX_SERIE = 21
 
 
 def limpar_cpf(value):
@@ -977,6 +978,9 @@ class ImportCsvView(APIView):
                         dataVencimento=formatar_data(
                             row[IDX_DATA_VENCIMENTO]
                         ),
+                        valorCobrancaAcao=formatar_valor(
+                            row[IDX_VALOR_ACAO]
+                        ),
                         valorCobranca=formatar_valor(
                             row[IDX_VALOR]
                         ),
@@ -1011,6 +1015,7 @@ class ImportCsvView(APIView):
                     "responsavelAtual",
                     "tipoCobranca",
                     "dataVencimento",
+                    "valorCobrancaAcao",
                     "valorCobranca",
                     "escola",
                     "nomeAluno",
