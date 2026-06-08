@@ -68,7 +68,8 @@ from cobranca.serializers import (
     BoletoSerializer, DividaSerializer, ResponsavelListSerializer, EscolaListSerializer, DividaListSerializer,
     ResponsavelImportacaoSerializer, IndiceSerializer, ResponsavelApiSerializer, AcordoCreateSerializer,
 )
-from cobranca.services import get_external_data, importar_responsaveis_com_boletos, get_responsaveis_api, enviar_email
+from cobranca.services import get_external_data, importar_responsaveis_com_boletos, get_responsaveis_api, enviar_email, \
+    distribuir_parcela
 
 
 class TipoCobrancaViewSet(ModelViewSet):
@@ -1065,3 +1066,40 @@ class CriarAcordo(APIView):
             },
             status=201
         )
+
+
+class BaixarParcela(APIView):
+    def post(self, request):
+
+        parcela_id = request.data.get("parcela_id")
+
+        parcela = get_object_or_404(AcordoParcela, id=parcela_id)
+
+        parcela.data_pagamento = datetime.date.today()
+        parcela.save()
+
+        distribuir_parcela(parcela)
+
+        return Response(
+            {
+                "parcela": parcela_id,
+                "mensagem": "Baixa efetuada",
+            }
+        )
+
+class PrimeiraParcelaNaoPagaView(APIView):
+    def get(self, request, responsavel_id):
+        parcela = AcordoParcela.objects.filter(
+            acordo__responsavel_id=responsavel_id,
+            data_pagamento=None,
+        ).order_by("vencimento").first()
+
+        if not parcela:
+            return Response(
+                {"detail": "Nenhuma parcela não paga encontrada"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = AcordoParcelaSerializer(parcela)
+
+        return Response(serializer.data)

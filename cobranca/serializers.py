@@ -129,7 +129,7 @@ class AlineaSerializer(serializers.ModelSerializer):
 class AcordoParcelaSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcordoParcela
-        fields = ["vencimento", "valor"]
+        fields = ["id", "vencimento", "valor", "data_pagamento"]
 
 
 class AcordoSerializer(serializers.ModelSerializer):

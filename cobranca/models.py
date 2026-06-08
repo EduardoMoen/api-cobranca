@@ -387,3 +387,29 @@ class TelefoneImportacao(models.Model):
 
     def __str__(self):
         return self.numero
+
+
+class Baixa(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    parcela = models.ForeignKey(
+        AcordoParcela,
+        on_delete=models.PROTECT,
+        related_name="baixas",
+    )
+    divida = models.ForeignKey(
+        Divida,
+        on_delete=models.PROTECT,
+        related_name="baixas",
+    )
+    valor = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+    criado_em = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.valor} - {self.criado_em}"

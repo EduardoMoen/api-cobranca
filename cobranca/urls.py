@@ -27,6 +27,7 @@ from cobranca.views import (
     ImportCsvView,
     carta_por_entidade_view,
     carta_por_escola_view, carta_word_view, carta_por_escola_word_view, carta_por_entidade_word_view, CriarAcordo,
+    BaixarParcela, PrimeiraParcelaNaoPagaView,
 )
 
 app_name = "cobranca"
@@ -65,4 +66,6 @@ urlpatterns = router.urls + [
     path("validar-boletos/", ValidarBoletos.as_view(), name="validar-boletos"),
     path("importar-csv/", ImportCsvView.as_view(), name="importar-csv"),
     path("criar-acordo/", CriarAcordo.as_view(), name="criar-acordo"),
+    path("baixar-parcela/", BaixarParcela.as_view(), name="baixar-parcela"),
+    path("primeira-nao-paga/<uuid:responsavel_id>/", PrimeiraParcelaNaoPagaView.as_view(), name="primeira-nao-paga"),
 ]

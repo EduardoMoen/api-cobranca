@@ -82,6 +82,10 @@ class ResponsavelFilter(BaseNomeFilter):
         field_name="entidade_id",
         required=False,
     )
+    cpf = django_filters.CharFilter(
+        field_name="cpf",
+        required=False,
+    )
 
     class Meta:
         model = Responsavel
