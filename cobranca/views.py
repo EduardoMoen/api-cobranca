@@ -969,6 +969,9 @@ class ImportCsvView(APIView):
                             "Número da cobrança vazio"
                         )
 
+                    data_vencimento = formatar_data(
+                        row[IDX_DATA_VENCIMENTO]
+                    )
 
                     obj = Divida(
                         entidade=entidade,
@@ -976,9 +979,7 @@ class ImportCsvView(APIView):
                         responsavelAtual=responsavel,
                         tipoCobranca_id=1,
                         numeroCobranca=numero_cobranca,
-                        dataVencimento=formatar_data(
-                            row[IDX_DATA_VENCIMENTO]
-                        ),
+                        dataVencimento=data_vencimento,
                         valorCobrancaAcao=formatar_valor(
                             row[IDX_VALOR_ACAO]
                         ),
@@ -991,6 +992,7 @@ class ImportCsvView(APIView):
                         serie=formata_serie(
                             row[IDX_SERIE]
                         ).strip(),
+                        ano=data_vencimento.year
                     )
 
                     novas_dividas.append(obj)
