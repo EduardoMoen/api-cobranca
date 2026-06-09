@@ -774,7 +774,7 @@ class ValidarBoletos(APIView):
         })
 
 
-CPF_REGEX = re.compile(r"/D")
+CPF_REGEX = re.compile(r"\D")
 
 IDX_ESCOLA = 1
 IDX_CPF = 2
