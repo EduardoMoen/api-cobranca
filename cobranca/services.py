@@ -51,9 +51,9 @@ def get_responsaveis_api(page_size: int):
     else:
         return None
 
-def importar_responsaveis_com_boletos(page_size: int):
-    url = f"https://7edu-br-accountsreceiving-staging-api.educadventista.org/api/v2/cobrancas/responsaveis-com-boletos/?PageSize={page_size}"
-    # url = f"https://7edu-br-accountsreceiving-api.educadventista.org/api/v2/cobrancas/responsaveis-com-boletos/?PageSize={page_size}"
+def importar_responsaveis_com_boletos():
+    # url = f"https://7edu-br-accountsreceiving-staging-api.educadventista.org/api/v2/cobrancas/responsaveis-com-boletos/"
+    url = f"https://7edu-br-accountsreceiving-api.educadventista.org/api/v2/cobrancas/responsaveis-com-boletos/"
 
 
     token = os.getenv("API_TOKEN")

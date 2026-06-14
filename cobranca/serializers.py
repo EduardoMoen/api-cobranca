@@ -326,6 +326,9 @@ class ResponsavelApiSerializer(serializers.ModelSerializer):
 
 
 class ResponsavelImportacaoSerializer(serializers.ModelSerializer):
+    _entidades_cache = {}
+    _escolas_cache = {}
+
     codigoEscola = serializers.CharField(source="codigo_escola")
     barrio = serializers.CharField(source="bairro")
 
@@ -358,26 +361,53 @@ class ResponsavelImportacaoSerializer(serializers.ModelSerializer):
 
         try:
             cod_entidade, cod_escola = responsavel.codigo_escola.split("|")
-        except:
+        except ValueError:
             cod_entidade = responsavel.codigo_escola
             cod_escola = "1"
 
-        entidade = Entidade.objects.get(codigo=cod_entidade)
-
-        escola = Escola.objects.filter(
-            entidade=entidade,
-            codigo=cod_escola,
-        ).first()
-
-        for boleto in boletos_data:
-            BoletoImportacao.objects.create(
-                responsavel=responsavel,
-                escola=escola,
-                **boleto
+        if cod_entidade not in self._entidades_cache:
+            self._entidades_cache[cod_entidade] = Entidade.objects.get(
+                codigo=cod_entidade
             )
 
-        for telefone in telefones_data:
-            TelefoneImportacao.objects.create(responsavel=responsavel, **telefone)
+        entidade = self._entidades_cache[cod_entidade]
+
+        escola_key = f"{cod_entidade}|{cod_escola}"
+
+        if escola_key not in self._escolas_cache:
+            self._escolas_cache[escola_key] = Escola.objects.get(
+                entidade=entidade,
+                codigo=cod_escola,
+            )
+
+        escola = self._escolas_cache[escola_key]
+
+        boletos = [
+            BoletoImportacao(
+                responsavel=responsavel,
+                escola=escola,
+                **boleto,
+            )
+            for boleto in boletos_data
+        ]
+
+        BoletoImportacao.objects.bulk_create(
+            boletos,
+            batch_size=1000,
+        )
+
+        telefones = [
+            TelefoneImportacao(
+                responsavel=responsavel,
+                **telefone,
+            )
+            for telefone in telefones_data
+        ]
+
+        TelefoneImportacao.objects.bulk_create(
+            telefones,
+            batch_size=1000,
+        )
 
         return responsavel
 

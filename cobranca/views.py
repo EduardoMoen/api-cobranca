@@ -405,8 +405,9 @@ class ImportResponsaveisApi(APIView):
 
 
 class ImportarResponsaveisComBoletos(APIView):
+    @transaction.atomic
     def post(self, request):
-        data = importar_responsaveis_com_boletos(page_size=500)
+        data = importar_responsaveis_com_boletos()
 
         if not data or "result" not in data:
             return Response(
@@ -416,29 +417,18 @@ class ImportarResponsaveisComBoletos(APIView):
 
         items = data["result"]
 
-        erros = []
-        total_importados = 0
+        serializer = ResponsavelImportacaoSerializer(
+            data=items,
+            many=True,
+        )
 
-        for i, item in enumerate(items, start=1):
-
-            serializer = ResponsavelImportacaoSerializer(data=item)
-
-            if serializer.is_valid():
-                serializer.save()
-                total_importados += 1
-            else:
-                erros.append({
-                    "linha": i,
-                    "erros": serializer.errors,
-                    "dados": item,
-                })
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
         return Response(
             {
                 "total_recebidos": len(items),
-                "total_importados": total_importados,
-                "total_erros": len(erros),
-                "erros": erros,
+                "total_importados": len(items),
             },
             status=status.HTTP_200_OK
         )
