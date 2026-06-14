@@ -407,7 +407,7 @@ class ImportResponsaveisApi(APIView):
 class ImportarResponsaveisComBoletos(APIView):
     @transaction.atomic
     def post(self, request):
-        data = importar_responsaveis_com_boletos()
+        data = importar_responsaveis_com_boletos(page_size=10000)
 
         if not data or "result" not in data:
             return Response(
