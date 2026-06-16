@@ -32,7 +32,7 @@ class UsuarioAdmin(UserAdmin):
 
 @admin.register(Escritorio)
 class EscritorioAdmin(admin.ModelAdmin):
-    list_display = ("id", "nome")
+    list_display = ("id", "nome", "endereco", "fone", "email")
 
 @admin.register(Responsavel)
 class ResponsavelAdmin(admin.ModelAdmin):

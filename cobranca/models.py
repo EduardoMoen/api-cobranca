@@ -23,6 +23,9 @@ class Banco(models.Model):
 class Escritorio(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=255, blank=True, null=True)
+    fone = models.CharField(max_length=255, blank=True, null=True)
+    email = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"{self.nome}"
