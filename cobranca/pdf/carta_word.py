@@ -30,9 +30,11 @@ def gerar_carta_word(responsavel, dividas):
 
     p_footer.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
+    d = dividas[0].entidade.escritorio
+
     run = p_footer.add_run(
-        "Rua Barbosa da Cunha, 386 - Guanabara, Campinas/SP - CEP 13.073-320\n"
-        "Fone: (19) 3232-5767"
+        f"{d.endereco}\n"
+        f"{d.fone}"
     )
 
     run.font.size = Pt(9)
