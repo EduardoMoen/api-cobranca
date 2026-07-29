@@ -722,7 +722,7 @@ class ValidarBoletos(APIView):
                     divida.serie = item.serie_turma
                     divida.nomeAluno = item.aluno_nome
                     divida.entidade = entidade
-                    divida.escola = item.escola
+                    divida.escola_id = item.escola_id
 
                     divida.save()
 
