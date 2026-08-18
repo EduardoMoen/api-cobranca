@@ -710,6 +710,7 @@ class ValidarBoletos(APIView):
 
                 if divida:
 
+                    divida.dataUltimaImportacao = datetime.date.today()
                     divida.numeroCobranca = item.numero_carne
                     divida.responsavel = responsavel
                     divida.tipoCobranca = tipo_cobranca
@@ -731,6 +732,8 @@ class ValidarBoletos(APIView):
                 else:
 
                     nova = Divida.objects.create(
+                        dataPrimeiraImportacao=datetime.date.today(),
+                        dataUltimaImportacao=datetime.date.today(),
                         codigoCobranca=item.codigo_carne,
                         numeroCobranca=item.numero_carne,
                         responsavel=responsavel,
