@@ -551,13 +551,21 @@ class ValidarResponsaveis(APIView):
         atualizados = 0
         erros = 0
 
+        entidades = {
+            entidade.codigo: entidade
+            for entidade in Entidade.objects.all()
+        }
+
         for item in importados.iterator():
 
             if not item.cpf:
                 continue
 
             try:
-                entidade = Entidade.objects.get(codigo=item.codigo_escola[:6])
+                codigo = item.codigo_escola[:6]
+                entidade = entidades.get(codigo)
+
+                # entidade = Entidade.objects.get(codigo=item.codigo_escola[:6])
 
                 obj, created = Responsavel.objects.update_or_create(
                     cpf=item.cpf,
@@ -586,6 +594,7 @@ class ValidarResponsaveis(APIView):
         return Response({
             "criados": criados,
             "atualizados": atualizados,
+            "erros": erros,
         })
 
 
